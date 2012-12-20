@@ -47,6 +47,7 @@ data Opcode = Ret                -- ;
             | SetA               -- a!
             deriving (Show, Eq, Bounded, Enum)
 
+-- | Converts a word to an opcode. The word has to be < 32.
 toOpcode :: F18Word -> Opcode
 toOpcode = toEnum . fromIntegral
 
@@ -79,8 +80,8 @@ toBits (Constant n)       = n
 
 -- | Reads in a word as a set of opcodes.
 fromBits :: F18Word -> MemWord
-fromBits n | isJump a  = Jump1 a     $ n .&. 0x3FF   
-           | isJump b  = Jump2 a b   $ n .&. 0xFF  
+fromBits n | isJump a  = Jump1 a     $ n .&. 0x3FF
+           | isJump b  = Jump2 a b   $ n .&. 0xFF
            | isJump c  = Jump3 a b c $ n .&. 0x7
            | otherwise = Instrs a b c d
   where a = toOpcode $ n `shift` (-13)
