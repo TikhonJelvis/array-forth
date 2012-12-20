@@ -10,7 +10,7 @@ type F18Word = Word18
 type Addr = F18Word
 
 -- | A program in the F18A instruction set.
-type F18A = [Opcode]
+type Program = [Opcode]
 
 -- | Each F18A instruction, ordered by opcode.
 data Opcode = Ret                -- ;
