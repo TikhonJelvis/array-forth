@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleInstances    #-}
 {-# LANGUAGE TemplateHaskell      #-}
 {-# LANGUAGE TypeSynonymInstances #-}
-module Language.Forth.Test.Instructions where
+module Main where
 
 import           Data.Functor                         ((<$>))
 
