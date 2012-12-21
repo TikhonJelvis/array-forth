@@ -16,4 +16,5 @@ push (Stack body) word = Stack $ word : init body
 
 -- | Pops the top of the stack, returning the value and the new stack.
 pop :: Stack -> (Stack, F18Word)
+pop (Stack [])     = error "Empty stack."
 pop (Stack (x:xs)) = (Stack $ xs ++ [x], x)

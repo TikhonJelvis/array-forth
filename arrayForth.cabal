@@ -53,4 +53,5 @@ library
   
   -- Other library packages from which modules are imported.
   build-depends:       base ==4.5.*, OddWord >=1.0.0, vector>=0.9.1
+  GHC-options:         -Wall -fno-warn-unused-do-bind -rtsopts -O2
   
