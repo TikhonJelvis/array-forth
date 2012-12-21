@@ -1,4 +1,4 @@
-module Language.Forth.Stack (empty, push, pop) where
+module Language.Forth.Stack (empty, push, pop, Stack) where
 
 import           Language.Forth.Instructions
 
@@ -11,8 +11,8 @@ empty :: Stack
 empty = Stack $ replicate 8 0
 
 -- | Pushes the given element on top of the stack, discarding the last element.
-push :: F18Word -> Stack -> Stack
-push word (Stack body) = Stack $ word : init body
+push :: Stack -> F18Word -> Stack
+push (Stack body) word = Stack $ word : init body
 
 -- | Pops the top of the stack, returning the value and the new stack.
 pop :: Stack -> (Stack, F18Word)
