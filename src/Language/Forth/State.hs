@@ -36,8 +36,10 @@ rpush :: State -> F18Word -> State
 rpush state@(State {returnStack}) word =
   state {r = word, returnStack = push returnStack word}
 
+-- | Read the memory at a location given by a Forth word.
 (!) :: Memory -> F18Word -> F18Word
 memory ! index = memory V.! (fromIntegral index)
 
+-- | Set the memory using Forth words.
 set :: Memory -> F18Word -> F18Word -> Memory
 set mem index value = mem // [(fromIntegral index, value)]

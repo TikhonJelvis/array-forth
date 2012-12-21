@@ -9,9 +9,6 @@ type F18Word = Word18
 -- instructions.
 type Addr = F18Word
 
--- | A program in the F18A instruction set.
-type Program = [Opcode]
-
 -- | Each F18A instruction, ordered by opcode.
 data Opcode = Ret                -- ;
             | Exec               -- ex
@@ -59,6 +56,10 @@ fromOpcode = fromIntegral . fromEnum
 isJump :: Opcode -> Bool
 isJump = (`elem` [Jump, Call, Next, If, MinusIf])
 
+-- | Can the given opcode go in the last slot?
+slot3 :: Opcode -> Bool
+slot3 = (`elem` [Ret, MultiplyStep, Unext, Plus, FetchP, Dup, StoreP, Nop])
+
 -- | Represents a word in memory. This word can either contain
 -- opcodes, opcodes and a jump address or just a constant number.
 data Instrs = Instrs Opcode Opcode Opcode Opcode
@@ -66,6 +67,9 @@ data Instrs = Instrs Opcode Opcode Opcode Opcode
             | Jump2 Opcode Opcode Addr
             | Jump1 Opcode Addr
             | Constant F18Word deriving (Show, Eq)
+
+-- | A program in the F18A instruction set.
+type Program = [Instrs]
 
 -- | Returns the given instructions as an actual word. This assumes
 -- the address is sized appropriately.
