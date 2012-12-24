@@ -1,4 +1,4 @@
-module Language.Forth.Stack (empty, push, pop, Stack) where
+module Language.Forth.Stack (empty, push, pop, fill, Stack) where
 
 import           Language.Forth.Instructions
 
@@ -18,3 +18,7 @@ push (Stack body) word = Stack $ word : init body
 pop :: Stack -> (Stack, F18Word)
 pop (Stack [])     = error "Empty stack."
 pop (Stack (x:xs)) = (Stack $ xs ++ [x], x)
+
+-- | Push the given elements onto the stack one-by-one.
+fill ::  Stack -> [F18Word] -> Stack
+fill = foldl push
