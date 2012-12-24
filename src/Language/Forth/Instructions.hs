@@ -42,7 +42,15 @@ data Opcode = Ret                -- ;
             | Push               -- push
             | SetB               -- b!
             | SetA               -- a!
-            deriving (Show, Eq, Bounded, Enum)
+            deriving (Eq, Bounded, Enum)
+
+-- | The names of the different instructions, ordered by opcode.
+names :: [String]
+names = [";", "ex", "jump", "call", "unext", "next", "if", "-if", "@p", "@+", "@b", "@",
+         "!p", "!+", "!b", "!", "+*", "2*", "2/", "-", "+", "and", "or", "drop", "dup",
+         "pop", "over", "a", ".", "push", "b!", "a!"]
+
+instance Show Opcode where show op = names !! fromEnum op
 
 -- | Converts a word to an opcode. The word has to be < 32.
 toOpcode :: F18Word -> Opcode
