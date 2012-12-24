@@ -11,19 +11,30 @@ size :: Int
 size = 18
 
 -- | Runs a single word's worth of instructions starting from the given state.
-step :: Instrs -> State -> State
-step (Instrs a b c d) state   = let s1 = execute a state
+word :: Instrs -> State -> State
+word (Instrs a b c d) state   = let s1 = execute a state
                                     s2 = if endWord a then s1 else execute b s1
                                     s3 = if endWord a || endWord b
                                          then s2 else execute c s2 in
                                 if endWord a || endWord b || endWord c then s3 else execute d s3
-step (Jump3 a b c addr) state = let s1 = execute a state
+word (Jump3 a b c addr) state = let s1 = execute a state
                                     s2 = if endWord a then s1 else execute b s1 in
                                 if endWord a || endWord b then s2 else jump c addr s2
-step (Jump2 a b addr) state   = let s' = execute a state in
+word (Jump2 a b addr) state   = let s' = execute a state in
                                 if endWord a then s' else jump b addr s'
-step (Jump1 a addr) state     = jump a addr state
-step (Constant _) _           = error "Cannot execute a constant!"
+word (Jump1 a addr) state     = jump a addr state
+word (Constant _) _           = error "Cannot execute a constant!"
+
+-- | Executes a single instruction in the given state, incrementing
+-- the program counter.
+step :: State -> State
+step state@(State {p}) = word (next state) $ state {p = p + 1}
+
+-- | Executes instructions until it either hits four nops or all 0s.
+stepProgram :: State -> State
+stepProgram state | done      = state
+                  | otherwise = stepProgram $ step state
+  where done = next state == Instrs Nop Nop Nop Nop || next state == Instrs Ret Ret Ret Ret
 
 -- | Does the given opcode cause the current word to stop executing?
 endWord :: Opcode -> Bool

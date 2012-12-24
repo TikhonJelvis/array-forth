@@ -1,11 +1,10 @@
-module Language.Forth.Parse (readOpcode, readProgram, ParseError (..)) where
+module Language.Forth.Parse (readOpcode, readProgram, ParseError (..), parseProgram) where
 
 import           Control.Applicative         ((<$>), (<*>))
 
 import           Data.List                   (elemIndex)
 import           Data.List.Split             (chunk, keepDelimsR, split,
                                               whenElt)
-import           Data.Maybe                  (listToMaybe, mapMaybe)
 
 import           Text.Printf                 (printf)
 
@@ -48,8 +47,14 @@ readProgram = mapM go . separate . words
         num str = case reads str of
           (x, _) : _ -> Right x
           []         -> Left $ BadNumber str
-        wrap pred err str = do op <- readOpcode str
-                               if pred op then Right op else Left $ err op
+        wrap cond err str = do code <- readOpcode str
+                               if cond code then Right code else Left $ err code
         op = wrap (not . isJump) NoAddr
         op3 = wrap slot3 NotSlot3
         jump = wrap isJump NotJump
+
+-- | Reads a program, calling error if the parse fails.
+parseProgram :: String -> [Instrs]
+parseProgram program = case readProgram program of
+  Right res -> res
+  Left  err -> error $ show err

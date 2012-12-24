@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
 module Language.Forth.Instructions where
 
 import           Data.Bits
