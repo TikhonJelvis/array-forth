@@ -1,14 +1,11 @@
 {-# LANGUAGE NamedFieldPuns #-}
 module Language.Forth.Interpreter where
 
-import           Data.Bits                   (complement, shift, (.&.), xor, testBit)
+import           Data.Bits                   (bitSize, complement, shift,
+                                              testBit, xor, (.&.))
 
 import           Language.Forth.Instructions
 import           Language.Forth.State
-
--- | How many bits to use for each forth word. I should make this configurable...
-size :: Int
-size = 18
 
 -- | Runs a single word's worth of instructions starting from the given state.
 word :: Instrs -> State -> State
@@ -71,12 +68,12 @@ execute op state@(State {a, b, p, r, s, t, memory}) = case op of
   SetA         -> state' {a = top}
   _            -> error "Cannot jump without an address!"
   where (state', top) = dpop state
-  
+
 jump :: Opcode -> Addr -> State -> State
 jump op addr state@(State{p, r, t}) = case op of
   Jump    -> state {p = addr}
   Call    -> (rpush state p) {p = addr}
   Next    -> if r == 0 then fst $ rpop state else state {r = r - 1, p = addr}
   If      -> if t /= 0 then state {p = addr} else state
-  MinusIf -> if t `testBit` pred size then state else state {p = addr}
+  MinusIf -> if t `testBit` pred (bitSize (0 :: F18Word)) then state else state {p = addr}
   _       -> error "Non-jump instruction given a jump address!"

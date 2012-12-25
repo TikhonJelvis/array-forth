@@ -10,9 +10,11 @@ import           Data.Functor                         ((<$>))
 
 import           Language.Forth.Instructions
 import           Language.Forth.Interpreter
+import           Language.Forth.Parse
 import           Language.Forth.Run
 import           Language.Forth.Stack
 import           Language.Forth.State
+import           Language.Forth.Synthesis
 
 import           Test.Framework.Providers.HUnit
 import           Test.Framework.Providers.QuickCheck2
@@ -32,6 +34,13 @@ prop_bits word = word == (toBits $ fromBits word)
 prop_opcode word = word < 0x20 ==> word == (fromOpcode $ toOpcode word)
 prop_pushPop word stack = word == snd (pop $ push stack word)
 prop_pop stack = stack == foldl1 (.) (replicate 8 $ fst . pop) stack
+
+-- Testing the utility functions for actually synthesizing programs:
+case_toNative1 = parseProgram "@p . @p . 2 10 or . . ." @=?
+                 toNative [Number 2, Opcode Nop, Number 10, Opcode Or]
+case_toNative2 = parseProgram "@p . @p + 2 10" @=?
+                 toNative [Number 2, Opcode Nop, Number 10, Opcode Plus]
+
 
 -- Interpreter tests (ported from Racket):
 unchanged regs state = assertBool "Something changed!" . and $ zipWith (==) start new

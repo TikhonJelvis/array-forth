@@ -68,6 +68,6 @@ set mem index value = mem // [(fromIntegral index, value)]
 
 -- | Loads the given program into memory at the given starting
 -- position.
-setProgram :: F18Word -> Program -> State -> State
+setProgram :: F18Word -> NativeProgram -> State -> State
 setProgram start program state@(State {memory}) =
   state {memory = memory // zip [fromIntegral start..] (toBits <$> program)}

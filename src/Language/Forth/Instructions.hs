@@ -78,7 +78,7 @@ data Instrs = Instrs Opcode Opcode Opcode Opcode
             | Constant F18Word deriving (Show, Eq)
 
 -- | A program in the F18A instruction set.
-type Program = [Instrs]
+type NativeProgram = [Instrs]
 
 -- | Returns the given instructions as an actual word. This assumes
 -- the address is sized appropriately.
