@@ -30,4 +30,3 @@ locations locations s₁ s₂ = fromIntegral . sum $ zipWith countBits (go s₁)
 -- summing the different distances.
 distances :: [Distance] -> Distance
 distances dists s₁ s₂ = sum [dist s₁ s₂ | dist <- dists]
-

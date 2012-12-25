@@ -25,7 +25,7 @@ word (Constant _) _           = error "Cannot execute a constant!"
 -- | Executes a single instruction in the given state, incrementing
 -- the program counter.
 step :: State -> State
-step state@(State {p}) = word (next state) $ state {p = p + 1}
+step state@State {p} = word (next state) $ state {p = p + 1}
 
 -- | Executes instructions until it either hits four nops or all 0s.
 stepProgram :: State -> State
@@ -38,7 +38,7 @@ endWord :: Opcode -> Bool
 endWord = (`elem` [Ret, Exec, Jump, Call, Unext, Next, If, MinusIf])
 
 execute :: Opcode -> State -> State
-execute op state@(State {a, b, p, r, s, t, memory}) = case op of
+execute op state@State {a, b, p, r, s, t, memory} = case op of
   Ret          -> fst . rpop $ state {p = r}
   Exec         -> state {r = p, p = r}
   Unext        -> if r == 0 then fst $ rpop state else state {r = r - 1, p = p - 1}
@@ -70,7 +70,7 @@ execute op state@(State {a, b, p, r, s, t, memory}) = case op of
   where (state', top) = dpop state
 
 jump :: Opcode -> Addr -> State -> State
-jump op addr state@(State{p, r, t}) = case op of
+jump op addr state@State{p, r, t} = case op of
   Jump    -> state {p = addr}
   Call    -> (rpush state p) {p = addr}
   Next    -> if r == 0 then fst $ rpop state else state {r = r - 1, p = addr}
