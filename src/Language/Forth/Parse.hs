@@ -31,11 +31,15 @@ readOpcode token = case elemIndex token names of
   Just res -> Right $ toEnum res
   Nothing  -> Left  $ BadOpcode token
 
+-- | Is the given string a valid number with no other tokens?
+isNumber :: String -> Bool
+isNumber str = let asNumber = reads str :: [(Integer, String)] in
+          not (null asNumber) && (null . snd $ head asNumber)
+
 -- | Read a whole program, splitting instructions up into words.
 readProgram :: String -> Either ParseError [Instrs]
 readProgram = mapM go . separate . words
   where separate = concatMap (chunk 4) . split (keepDelimsR $ whenElt isNumber)
-        isNumber str = not $ null (reads str :: [(Integer, String)])
         go [a, b, c, d] = do c' <- readOpcode c
                              if not $ isJump c'
                                then Instrs <$> op a <*> op b <*> op c <*> op3 d
