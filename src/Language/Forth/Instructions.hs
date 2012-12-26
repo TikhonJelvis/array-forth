@@ -51,6 +51,10 @@ names = [";", "ex", "jump", "call", "unext", "next", "if", "-if", "@p", "@+", "@
          "!p", "!+", "!b", "!", "+*", "2*", "2/", "-", "+", "and", "or", "drop", "dup",
          "pop", "over", "a", ".", "push", "b!", "a!"]
 
+-- | All of the opcodes, in order.
+opcodes :: [Opcode]
+opcodes = [minBound..maxBound]
+
 instance Show Opcode where show op = names !! fromEnum op
 
 -- | Converts a word to an opcode. The word has to be < 32.
@@ -68,6 +72,14 @@ isJump = (`elem` [Jump, Call, Next, If, MinusIf])
 -- | Can the given opcode go in the last slot?
 slot3 :: Opcode -> Bool
 slot3 = (`elem` [Ret, MultiplyStep, Unext, Plus, FetchP, Dup, StoreP, Nop])
+
+-- | Estimates how long a given opcode will take to execute. Normal
+-- opcodes take 1.5 nanoseconds where ones that access the memory take
+-- 5 nanoseconds.
+opcodeTime :: Opcode -> Double
+opcodeTime op = if memoryOp op then 5 else 1.5
+  where memoryOp = (`elem` [FetchP, FetchPlus, FetchB, Fetch, StoreP,
+                            StorePlus, StoreB, Store])
 
 -- | Represents a word in memory. This word can either contain
 -- opcodes, opcodes and a jump address or just a constant number.
@@ -101,3 +113,19 @@ fromBits n | isJump a  = Jump1 a     $ n .&. 0x3FF
         b = toOpcode $ n `shift` (-8) .&. 0x1F
         c = toOpcode $ n `shift` (-3) .&. 0x1F
         d = toOpcode $ (n .&. 0x7) `shift` 2
+
+-- | Returns the opcodes in the given instruction word. A constant
+-- corresponds to not having any opcodes.
+toOpcodes :: Instrs -> [Opcode]
+toOpcodes (Instrs a b c d) = [a, b, c, d]
+toOpcodes (Jump3 a b c _)  = [a, b, c]
+toOpcodes (Jump2 a b _)    = [a, b]
+toOpcodes (Jump1 a _)      = [a]
+toOpcodes Constant{}       = []
+
+-- | Estimates the running time of the program in nanoseconds. This is
+-- based on the numbers provided in the manual: faster instructions
+-- take 1.5 nanoseconds and slower ones take 5. For now, this estimate
+-- ignores control flow like ifs and loops.
+runningTime :: NativeProgram -> Double
+runningTime = sum . map opcodeTime . concatMap toOpcodes

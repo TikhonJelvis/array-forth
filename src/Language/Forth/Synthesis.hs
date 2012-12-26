@@ -40,3 +40,8 @@ fixSlot3 program
           Opcode op -> op
           Number{}  -> FetchP
           Unused    -> error "Cannot have unused slot in fixSlot3!"
+
+-- | Returns a measure of the quality of the program. For now this is
+-- only based on the performance of the program.
+evaluate :: Program -> Double
+evaluate = negate . runningTime . toNative
