@@ -4,10 +4,11 @@
 {-# LANGUAGE TypeSynonymInstances #-}
 module Main where
 
+import           Control.Applicative                  ((<$>), (<*>))
 import           Control.Monad                        (zipWithM)
 
 import           Data.Bits                            (complement, xor, (.&.))
-import           Data.Functor                         ((<$>))
+import           Data.List                            (genericLength)
 
 import           Language.Forth.Instructions
 import           Language.Forth.Interpreter
@@ -21,12 +22,42 @@ import           Test.Framework.Providers.HUnit
 import           Test.Framework.Providers.QuickCheck2
 import           Test.Framework.TH
 import           Test.HUnit
-import           Test.QuickCheck                      ((==>))
+import           Test.QuickCheck                      (forAll, (==>))
 import           Test.QuickCheck.Arbitrary            (Arbitrary, arbitrary)
+import           Test.QuickCheck.Gen                  (Gen, elements, oneof)
 
 instance Arbitrary F18Word where arbitrary = fromInteger <$> arbitrary
 
+wordBits bits = (((2 ^ bits) - 1) .&.) <$> arbitrary
+
 instance Arbitrary Stack where arbitrary = foldl push empty <$> arbitrary
+
+instance Arbitrary Opcode where arbitrary = elements opcodes
+
+straight, jumps, fast, slow, inSlot3 :: Gen Opcode
+straight = elements $ filter (not . isJump) opcodes
+jumps    = elements $ filter isJump opcodes
+fast     = elements $ filter (\ e -> opcodeTime e == 1.5) opcodes
+slow     = elements $ filter (\ e -> opcodeTime e == 5) opcodes
+inSlot3  = elements $ filter slot3 opcodes
+
+instance Arbitrary Instrs where
+  arbitrary = oneof [instrs, jump3, jump2, jump1, constant]
+
+instrs, jump3, jump2, jump1, constant :: Gen Instrs
+instrs = Instrs <$> straight <*> straight <*> straight <*> straight
+jump3 = Jump3 <$> straight <*> straight <*> jumps <*> wordBits 3
+jump2 = Jump2 <$> straight <*> jumps <*> wordBits 8
+jump1 = Jump1 <$> jumps <*> wordBits 10
+constant = Constant <$> arbitrary
+
+instance Arbitrary Instruction where
+  arbitrary = oneof [opcode, number, unused]
+
+opcode, number, unused :: Gen Instruction
+opcode = Opcode <$> arbitrary
+number = Number <$> arbitrary
+unused = return Unused
 
 main = $(defaultMainGenerator)
 
@@ -37,6 +68,11 @@ prop_bits word = word == (toBits $ fromBits word)
 prop_opcode word = word < 0x20 ==> word == (fromOpcode $ toOpcode word)
 prop_pushPop word stack = word == snd (pop $ push stack word)
 prop_pop stack = stack == foldl1 (.) (replicate 8 $ fst . pop) stack
+
+case_runningTime = do let time = runningTime . parseProgram
+                      15.5 @=? time ". . . . @p . . . 10"
+                      6    @=? time ". . . ."
+                      20   @=? time "@p @p @p @p 1 2 3 4"
 
 -- Testing the utility functions for actually synthesizing programs:
 case_toNative1 = parseProgram "@p . @p . 2 10 or . . ." @=?
