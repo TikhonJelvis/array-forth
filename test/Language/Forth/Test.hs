@@ -68,6 +68,10 @@ prop_bits word = word == (toBits $ fromBits word)
 prop_opcode word = word < 0x20 ==> word == (fromOpcode $ toOpcode word)
 prop_pushPop word stack = word == snd (pop $ push stack word)
 prop_pop stack = stack == foldl1 (.) (replicate 8 $ fst . pop) stack
+prop_runningTimeConstant program  = forAll constant $ \ c ->
+  runningTime (program ++ [c]) == runningTime program
+
+prop_evaluateRunningTime program = negate (evaluate program) == runningTime (toNative program)
 
 case_runningTime = do let time = runningTime . parseProgram
                       15.5 @=? time ". . . . @p . . . 10"

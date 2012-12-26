@@ -19,15 +19,15 @@ type Program = [Instruction]
 -- instructions going into the last slot.
 toNative :: Program -> NativeProgram
 toNative = concatMap (toInstrs . addFetchP) . chunk 4 . fixSlot3 . filter (/= Unused)
-  where addFetchP ops = uncurry (++) (go ops)
-          where go [] = ([], [])
-                go (n@Number{} : rest) = let (instrs, consts) = go rest in
-                  (Opcode FetchP : instrs, n : consts)
-                go (instr : rest) = let (instrs, consts) = go rest in
-                  (instr : instrs, consts)
-        toInstrs (Opcode a : Opcode b : Opcode c : Opcode d : rest) =
-          Instrs a b c d : map (\ (Number n) -> Constant n) rest
-        toInstrs ls = toInstrs . take 4 $ ls ++ repeat (Opcode Nop)
+  where addFetchP [] = ([], [])
+        addFetchP (n@Number{} : rest) =
+          let (instrs, consts) = addFetchP rest in (Opcode FetchP : instrs, n : consts)
+        addFetchP (instr : rest) =
+          let (instrs, consts) = addFetchP rest in (instr : instrs, consts)
+        toInstrs ([Opcode a, Opcode b, Opcode c, Opcode d], numbers) = 
+          Instrs a b c d : map (\ (Number n) -> Constant n) numbers
+        toInstrs (instrs, consts) =
+          toInstrs (take 4 $ instrs ++ repeat (Opcode Nop), consts)
 
 -- | Take a program and ensure that only instructions allowed in the
 -- last slot go there by adding nops as necessary.
