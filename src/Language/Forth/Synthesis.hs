@@ -1,8 +1,21 @@
+{-# LANGUAGE FlexibleInstances    #-}
+{-# LANGUAGE NamedFieldPuns       #-}
+{-# LANGUAGE ScopedTypeVariables  #-}
+{-# LANGUAGE TypeSynonymInstances #-}
 module Language.Forth.Synthesis where
 
-import           Data.List.Split             (chunk)
+import           Control.Arrow                   (first)
+import           Control.Monad.Random            (Random, random, randomR)
+
+import           Data.Functor                    ((<$>))
+import           Data.List                       (genericLength)
+import           Data.List.Split                 (chunk)
 
 import           Language.Forth.Instructions
+
+import           Language.Synthesis.Distribution (Distr (..), categorical, mix,
+                                                  negativeInfinity, randInt,
+                                                  uniform)
 
 -- | Represents a single instruction as viewed by the
 -- synthesizer. This can be an opcode, a numeric literal or a token
@@ -24,7 +37,7 @@ toNative = concatMap (toInstrs . addFetchP) . chunk 4 . fixSlot3 . filter (/= Un
           let (instrs, consts) = addFetchP rest in (Opcode FetchP : instrs, n : consts)
         addFetchP (instr : rest) =
           let (instrs, consts) = addFetchP rest in (instr : instrs, consts)
-        toInstrs ([Opcode a, Opcode b, Opcode c, Opcode d], numbers) = 
+        toInstrs ([Opcode a, Opcode b, Opcode c, Opcode d], numbers) =
           Instrs a b c d : map (\ (Number n) -> Constant n) numbers
         toInstrs (instrs, consts) =
           toInstrs (take 4 $ instrs ++ repeat (Opcode Nop), consts)
@@ -45,3 +58,24 @@ fixSlot3 program
 -- only based on the performance of the program.
 evaluate :: Program -> Double
 evaluate = negate . runningTime . toNative
+
+-- I need this so that I can get a distribution over Forth words.
+instance Random F18Word where
+  randomR (start, end) gen =
+    first fromInteger $ randomR (fromIntegral start, fromIntegral end) gen
+  random = randomR (0, maxBound)
+
+-- | The default distribution of instructions. For now, we do not
+-- support any sort of jumps. All the other possible instructions
+-- along with constant numbers and unused slots are equally
+-- likely. The numeric value of constants is currently a uniform
+-- distribution over 18-bit words.
+defaultOps :: Distr Instruction
+defaultOps = mix [(constants, 1.0), (uniform [Unused], 1.0),
+                  (uniform  instrs, genericLength instrs)]
+  where instrs = map Opcode $ filter (not . isJump) opcodes
+        constants = let Distr {sample, logProbability} = randInt (0, maxBound)
+                        logProb (Number n) = logProbability n
+                        logProb _          = negativeInfinity in
+                    Distr { sample = Number <$> sample
+                          , logProbability = logProb }

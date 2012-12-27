@@ -24,7 +24,8 @@ import           Test.Framework.TH
 import           Test.HUnit
 import           Test.QuickCheck                      (forAll, (==>))
 import           Test.QuickCheck.Arbitrary            (Arbitrary, arbitrary)
-import           Test.QuickCheck.Gen                  (Gen, elements, oneof)
+import           Test.QuickCheck.Gen                  (Gen, elements, listOf,
+                                                       oneof)
 
 instance Arbitrary F18Word where arbitrary = fromInteger <$> arbitrary
 
@@ -58,6 +59,9 @@ opcode = Opcode <$> arbitrary
 number = Number <$> arbitrary
 unused = return Unused
 
+straightlineProgram :: Gen Program
+straightlineProgram = listOf $ oneof [Opcode <$> straight, number, unused]
+
 main = $(defaultMainGenerator)
 
 run = runProgram startState
@@ -74,6 +78,18 @@ prop_evaluateRunningTime program = negate (evaluate program) == runningTime (toN
 
 prop_displayReadProgram program = program == parseProgram (displayProgram program)
 
+-- Returns whether the given instruction word has jump addresses for
+-- all the jumps and has no jumps without addresses.
+isValid :: Instrs -> Bool
+isValid (Instrs a b c d)   = all (not . isJump) [a, b, c] && slot3 d 
+isValid (Jump3 a b c addr) = all (not . isJump) [a, b] && isJump c   
+isValid (Jump2 a b addr)   = not (isJump a) && isJump b              
+isValid (Jump1 a addr)     = isJump a                             
+isValid Constant{}         = True 
+
+-- For now, we do not really support jumps in the Program type.
+prop_validNative = forAll straightlineProgram $ \ p -> all isValid $ toNative p
+
 case_runningTime = do let time = runningTime . parseProgram
                       15.5 @=? time ". . . . @p . . . 10"
                       6    @=? time ". . . ."
@@ -89,7 +105,7 @@ case_toNative2 = parseProgram "@p . @p + 2 10" @=?
 unchanged regs = assertBool "Something changed!" . and $ zipWith (==) start new
   where start = map ($ startState) regs
         new   = map ($ ?res) regs
-case_1 = do let ?res = run "@p @p + . 2 3"
+case_1 = do let ?res = run "@p @p . + 2 3"
             3 @=? p ?res
             5 @=? t ?res
             unchanged [a, b, r, s]
