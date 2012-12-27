@@ -41,8 +41,7 @@ fast     = elements $ filter (\ e -> opcodeTime e == 1.5) opcodes
 slow     = elements $ filter (\ e -> opcodeTime e == 5) opcodes
 inSlot3  = elements $ filter slot3 opcodes
 
-instance Arbitrary Instrs where
-  arbitrary = oneof [instrs, jump3, jump2, jump1, constant]
+instance Arbitrary Instrs where arbitrary = oneof [instrs, jump3, jump2, jump1, constant]
 
 instrs, jump3, jump2, jump1, constant :: Gen Instrs
 instrs = Instrs <$> straight <*> straight <*> straight <*> straight
@@ -89,182 +88,182 @@ unchanged regs = assertBool "Something changed!" . and $ zipWith (==) start new
   where start = map ($ startState) regs
         new   = map ($ ?res) regs
 case_1 = do let ?res = run "@p @p + . 2 3"
-            p ?res @=? 3
-            t ?res @=? 5
+            3 @=? p ?res
+            5 @=? t ?res
             unchanged [a, b, r, s]
 case_2 = do let ?res = run "@p - . . 0"
-            p ?res @=? 2
-            t ?res @=? (- 1)
+            2 @=? p ?res
+            (- 1) @=? t ?res
             unchanged [a, b, r, s]
 case_3 = do let ?res = run "@p b! @p . 4 42 !b @p . ."
-            p ?res @=? 5
-            t ?res @=? 42
-            b ?res @=? 4
-            memory ?res ! 4 @=? 42
+            5 @=? p ?res
+            42 @=? t ?res
+            4 @=? b ?res
+            42 @=? memory ?res ! 4
             unchanged [a, r, s]
 case_4 = do let ?res = run "- dup dup dup dup dup dup dup"
-            p ?res @=? 2
-            t ?res @=? (- 1)
-            s ?res @=? (- 1)
-            dataStack ?res @=? fill empty [0, 0, -1, -1, -1, -1, -1, -1]
+            2 @=? p ?res
+            (- 1) @=? t ?res
+            (- 1) @=? s ?res
+            fill empty [0, 0, -1, -1, -1, -1, -1, -1] @=? dataStack ?res
             unchanged [a, b, r]
 case_5 = do let ?res = run "dup or a! @p 123 !+ @p ! . 456 dup or a! . @+ 2* @+ . 2/ + ! ."
-            a ?res @=? 2
-            memory ?res ! 0 @=? 123
-            memory ?res ! 1 @=? 456
-            memory ?res ! 2 @=? 474
-            p ?res @=? 7
+            2 @=? a ?res
+            123 @=? memory ?res ! 0
+            456 @=? memory ?res ! 1
+            474 @=? memory ?res ! 2
+            7 @=? p ?res
             unchanged [b, r, s, t]
 case_ret = do let ?res = run "call 2 . . . . ; . . ."
-              p ?res @=? 1
+              1 @=? p ?res
               unchanged [a, b, r, s, t]
 case_jump = do let ?res = run "jump 42"
-               p ?res @=? 42
+               42 @=? p ?res
                unchanged [a, b, r, s, t]
 case_call = do let ?res = run "call 10"
-               r ?res @=? 1
-               p ?res @=? 10
+               1 @=? r ?res
+               10 @=? p ?res
                unchanged [a, b, s, t]
 case_unext = do let ?res = run ". . unext ."
-                p ?res @=? 1
+                1 @=? p ?res
                 unchanged [a, b, r, s, t]
 case_unext' = do let ?res = run "@p push . . 41 @+ . . unext"
-                 p ?res @=? 3
-                 a ?res @=? 42
+                 3 @=? p ?res
+                 42 @=? a ?res
                  unchanged [b, r, s, t]
 case_if = do let ?res = run "if 42"
-             p ?res @=? 1
+             1 @=? p ?res
              unchanged [a, b, r, s, t]
 case_if' = do let ?res = run "@p if 42 10"
-              p ?res @=? 42
+              42 @=? p ?res
               unchanged [a, b, r, s]
 case_minusIf = do let ?res = run "-if 42"
-                  p ?res @=? 42
+                  42 @=? p ?res
                   unchanged [a, b, r, s, t]
 case_minusIf' = do let ?res = run "- -if 42"
-                   p ?res @=? 1
+                   1 @=? p ?res
                    unchanged [a, b, r, s]
 case_fetchP = do let ?res = run "@p . . . 42"
-                 p ?res @=? 2
-                 t ?res @=? 42
+                 2 @=? p ?res
+                 42 @=? t ?res
                  unchanged [a, b, r, s]
 case_fetchPlus = do let ?res = run "@+ . . ."
-                    a ?res @=? 1
-                    t ?res @=? memory ?res ! 0
+                    1 @=? a ?res
+                    memory ?res ! 0 @=? t ?res
                     unchanged [b, r, s]
 case_fetchB = do let ?res = run "@b . . ."
-                 t ?res @=? memory ?res ! 0
+                 memory ?res ! 0 @=? t ?res
                  unchanged [b, r, s]
 case_fetch = do let ?res = run "@ . . ."
-                t ?res @=? memory ?res ! 0
+                memory ?res ! 0 @=? t ?res
                 unchanged [b, r, s]
 case_storeP = do let ?res = run "@p !p . . 42"
-                 p ?res @=? 3
-                 memory ?res ! (p ?res - 1) @=? 42
+                 3 @=? p ?res
+                 42 @=? memory ?res ! (p ?res - 1)
                  unchanged [a, b, r, s]
 case_storePlus = do let ?res = run "@p !+ . . 42"
-                    a ?res @=? 1
-                    p ?res @=? 2
-                    memory ?res ! 0 @=? 42
+                    1 @=? a ?res
+                    2 @=? p ?res
+                    42 @=? memory ?res ! 0
                     unchanged [b, r, s]
 case_storePlus' = do let ?res = run "@p @p a! . 42 10 !+ . . ."
-                     a ?res @=? 11
-                     p ?res @=? 4
-                     memory ?res ! 10 @=? 42
+                     11 @=? a ?res
+                     4 @=? p ?res
+                     42 @=? memory ?res ! 10
                      unchanged [b, r, s]
 case_storePlus'' = do let ?res = run "dup or a! @p 123 !+ @p ! . 456"
-                      a ?res @=? 1
-                      memory ?res ! 0 @=? 123
-                      memory ?res ! 1 @=? 456
+                      1 @=? a ?res
+                      123 @=? memory ?res ! 0
+                      456 @=? memory ?res ! 1
                       unchanged [b, r, s, t]
 case_storeB = do let ?res = run "@p !b . . 42"
-                 p ?res @=? 2
-                 memory ?res ! 0 @=? 42
+                 2 @=? p ?res
+                 42 @=? memory ?res ! 0
                  unchanged [a, b, r, s]
 case_storeB' = do let ?res = run "@p @p b! . 42 10 !b . . ."
-                  p ?res @=? 4
-                  memory ?res ! 10 @=? 42
-                  b ?res @=? 10
+                  4 @=? p ?res
+                  42 @=? memory ?res ! 10
+                  10 @=? b ?res
                   unchanged [a, r, s]
 case_store = do let ?res = run "@p ! . . 42"
-                p ?res @=? 2
-                memory ?res ! 0 @=? 42
+                2 @=? p ?res
+                42 @=? memory ?res ! 0
                 unchanged [a, b, r, s]
 case_store' = do let ?res = run "@p @p a! . 42 10 ! . . ."
-                 a ?res @=? 10
-                 p ?res @=? 4
-                 memory ?res ! 10 @=? 42
+                 10 @=? a ?res
+                 4 @=? p ?res
+                 42 @=? memory ?res ! 10
                  unchanged [b, r, s]
 case_store'' = do let ?res = run "dup or a! @p 123 ! . . ."
-                  a ?res @=? 0
-                  memory ?res ! 0 @=? 123
+                  0 @=? a ?res
+                  123 @=? memory ?res ! 0
                   unchanged [b, r, s, t]
 case_times2 = do let ?res = run "@p 2* . . 2"
-                 t ?res @=? 4
-                 p ?res @=? 2
+                 4 @=? t ?res
+                 2 @=? p ?res
                  unchanged [a, b, r, s]
 case_div2 = do let ?res = run "@p 2/ . . 4"
-               t ?res @=? 2
-               p ?res @=? 2
+               2 @=? t ?res
+               2 @=? p ?res
                unchanged [a, b, r, s]
 case_not = do let ?res = run "- . . ."
-              t ?res @=? (- 1)
-              p ?res @=? 1
+              (- 1) @=? t ?res
+              1 @=? p ?res
               unchanged [a, b, r, s]
 case_not' = do let ?res = run "@p - . . 42"
-               t ?res @=? complement 42
-               p ?res @=? 2
+               complement 42 @=? t ?res
+               2 @=? p ?res
                unchanged [a, b, r, s]
 case_plus = do let ?res = run "@p @p . + 12 30"
-               t ?res @=? 42
-               p ?res @=? 3
+               42 @=? t ?res
+               3 @=? p ?res
                unchanged [a, b, r, s]
 case_and = do let ?res = run "@p @p and . 12 30"
-              t ?res @=? 12 .&. 30
-              p ?res @=? 3
+              12 .&. 30 @=? t ?res
+              3 @=? p ?res
               unchanged [a, b, r, s]
 case_or = do let ?res = run "@p @p or . 12 30"
-             t ?res @=? 12 `xor` 30
-             p ?res @=? 3
+             12 `xor` 30 @=? t ?res
+             3 @=? p ?res
              unchanged [a, b, r, s]
 case_drop = do let ?res = run "@p @p drop . 1 2"
-               t ?res @=? 1
-               p ?res @=? 3
+               1 @=? t ?res
+               3 @=? p ?res
                unchanged [a, b, r, s]
 case_dup = do let ?res = run "@p dup . . 42"
-              t ?res @=? 42
-              s ?res @=? 42
-              p ?res @=? 2
+              42 @=? t ?res
+              42 @=? s ?res
+              2 @=? p ?res
               unchanged [a, b, r]
 case_dup' = do let ?res = run "@p dup or . 42"
-               t ?res @=? 0
-               p ?res @=? 2
+               0 @=? t ?res
+               2 @=? p ?res
                unchanged [a, b, r, s]
 case_pop = do let ?res = run "call 2 0 pop . . ."
-              t ?res @=? 1
+              1 @=? t ?res
               unchanged [a, b, r, s]
 case_over = do let ?res = run "@p @p over . 1 2"
-               t ?res @=? 1
-               s ?res @=? 2
-               p ?res @=? 3
+               1 @=? t ?res
+               2 @=? s ?res
+               3 @=? p ?res
                unchanged [a, b, r]
 case_a = do let ?res = run "@p a! a . 42"
-            a ?res @=? 42
-            t ?res @=? 42
-            p ?res @=? 2
+            42 @=? a ?res
+            42 @=? t ?res
+            2 @=? p ?res
             unchanged [b, r, s]
 case_nop = do let ?res = step $ run ". . . ."
-              p ?res @=? 1
+              1 @=? p ?res
               unchanged [a, b, r, s, t]
 case_push = do let ?res = run "@p push . . 42"
-               r ?res @=? 42
-               p ?res @=? 2
+               42 @=? r ?res
+               2 @=? p ?res
                unchanged [a, b, s, t]
 case_setB = do let ?res = run "@p b! . . 42"
-               b ?res @=? 42
-               p ?res @=? 2
+               42 @=? b ?res
+               2 @=? p ?res
                unchanged [a, r, s, t]
 case_setA = do let ?res = run "@p a! . . 42"
-               a ?res @=? 42
-               p ?res @=? 2
+               42 @=? a ?res
+               2 @=? p ?res
                unchanged [b, r, s, t]
