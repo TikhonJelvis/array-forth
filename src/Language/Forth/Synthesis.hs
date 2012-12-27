@@ -11,7 +11,10 @@ import           Data.Functor                    ((<$>))
 import           Data.List                       (genericLength)
 import           Data.List.Split                 (chunk)
 
+import           Language.Forth.Distance
 import           Language.Forth.Instructions
+import           Language.Forth.Interpreter
+import           Language.Forth.State
 
 import           Language.Synthesis.Distribution (Distr (..), categorical, mix,
                                                   negativeInfinity, randInt,
@@ -58,6 +61,15 @@ fixSlot3 program
 -- only based on the performance of the program.
 evaluate :: Program -> Double
 evaluate = negate . runningTime . toNative
+
+-- | Runs a given program from the default starting state.
+runProgram :: State -> Program -> State
+runProgram start = runNativeProgram start . toNative
+
+-- | Compare a program against an input/output pair using the given
+-- distance function.
+test :: Distance -> Program -> (State, State) -> Double
+test distance program (input, output) = distance output $ runProgram input program
 
 -- I need this so that I can get a distribution over Forth words.
 instance Random F18Word where
