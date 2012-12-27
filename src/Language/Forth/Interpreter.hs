@@ -33,6 +33,11 @@ stepProgram state | done      = state
                   | otherwise = stepProgram $ step state
   where done = next state == Instrs Nop Nop Nop Nop || next state == Instrs Ret Ret Ret Ret
 
+-- | Executes the specified program on the given state until it hits a
+-- word made up of four nops or all 0s.
+runNativeProgram :: State -> NativeProgram -> State
+runNativeProgram start program = stepProgram $ setProgram 0 program start
+
 -- | Does the given opcode cause the current word to stop executing?
 endWord :: Opcode -> Bool
 endWord = (`elem` [Ret, Exec, Jump, Call, Unext, Next, If, MinusIf])

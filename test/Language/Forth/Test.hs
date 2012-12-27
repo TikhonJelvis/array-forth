@@ -13,7 +13,6 @@ import           Data.List                            (genericLength)
 import           Language.Forth.Instructions
 import           Language.Forth.Interpreter
 import           Language.Forth.Parse
-import           Language.Forth.Run
 import           Language.Forth.Stack
 import           Language.Forth.State
 import           Language.Forth.Synthesis
@@ -64,7 +63,7 @@ straightlineProgram = listOf $ oneof [Opcode <$> straight, number, unused]
 
 main = $(defaultMainGenerator)
 
-run = runProgram startState
+run = runNativeProgram startState . parseProgram
 
 -- Instruction utilities tests:
 prop_bits word = word == (toBits $ fromBits word)
