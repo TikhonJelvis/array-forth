@@ -30,6 +30,11 @@ data Instruction = Opcode Opcode
 -- | A program to be manipulated by the MCMC synthesizer
 type Program = [Instruction]
 
+data Problem = Problem { spec :: Program
+                       , inputs :: [State]
+                       , distance :: Distance
+                       }
+
 -- | Takes a program as handled by the synthesizer and makes it native
 -- by turning literal numbers into @p and fixing any issues with
 -- instructions going into the last slot.
@@ -59,8 +64,8 @@ fixSlot3 program
 
 -- | Returns a measure of the quality of the program. For now this is
 -- only based on the performance of the program.
-evaluate :: Program -> Double
-evaluate = negate . runningTime . toNative
+runtime :: Program -> Double
+runtime = runningTime . toNative
 
 -- | Runs a given program from the default starting state.
 runProgram :: State -> Program -> State
@@ -70,6 +75,14 @@ runProgram start = runNativeProgram start . toNative
 -- distance function.
 test :: Distance -> Program -> (State, State) -> Double
 test distance program (input, output) = distance output $ runProgram input program
+
+-- | Given a specification program and some inputs, evaluate a program
+-- against the specification for both performance and correctness.
+evaluate :: Problem -> Program -> Double
+evaluate Problem {spec, inputs, distance} program = 10 * correctness + performance
+  where pairs = zip inputs $ map (`runProgram` spec) inputs
+        correctness = -sum (test distance program <$> pairs)
+        performance = runtime spec - runtime program
 
 -- I need this so that I can get a distribution over Forth words.
 instance Random F18Word where
