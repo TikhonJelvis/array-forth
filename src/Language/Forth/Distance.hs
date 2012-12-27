@@ -18,13 +18,13 @@ countBits n₁ n₂ = popCount $ n₁ `xor` n₂
 -- the given registers. You could use it like `compareRegisters [s, t]`.
 registers :: [State -> F18Word] -> Distance
 registers regs s₁ s₂ = fromIntegral . sum $ zipWith countBits (go s₁) (go s₂)
-  where go s = map ($ s) regs
+  where go state = map ($ state) regs
 
 -- | Returns a distance function that counts the different bits
 -- between the given memory locations.
 locations :: [F18Word] -> Distance
-locations locations s₁ s₂ = fromIntegral . sum $ zipWith countBits (go s₁) (go s₂)
-  where go s = map (memory s !) locations
+locations addresses s₁ s₂ = fromIntegral . sum $ zipWith countBits (go s₁) (go s₂)
+  where go state = map (memory state !) addresses
 
 -- | Combines multiple distance functions to create a new one, by
 -- summing the different distances.

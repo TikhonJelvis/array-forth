@@ -16,7 +16,7 @@ import           Language.Forth.Instructions
 import           Language.Forth.Interpreter
 import           Language.Forth.State
 
-import           Language.Synthesis.Distribution (Distr (..), categorical, mix,
+import           Language.Synthesis.Distribution (Distr (..), mix,
                                                   negativeInfinity, randInt,
                                                   uniform)
 
@@ -29,11 +29,6 @@ data Instruction = Opcode Opcode
 
 -- | A program to be manipulated by the MCMC synthesizer
 type Program = [Instruction]
-
-data Problem = Problem { spec :: Program
-                       , inputs :: [State]
-                       , distance :: Distance
-                       }
 
 -- | Takes a program as handled by the synthesizer and makes it native
 -- by turning literal numbers into @p and fixing any issues with
@@ -78,10 +73,10 @@ test distance program (input, output) = distance output $ runProgram input progr
 
 -- | Given a specification program and some inputs, evaluate a program
 -- against the specification for both performance and correctness.
-evaluate :: Problem -> Program -> Double
-evaluate Problem {spec, inputs, distance} program = 10 * correctness + performance
+evaluate :: Program -> [State] -> Distance -> Program -> Double
+evaluate spec inputs score program = 10 * correctness + performance
   where pairs = zip inputs $ map (`runProgram` spec) inputs
-        correctness = -sum (test distance program <$> pairs)
+        correctness = -sum (test score program <$> pairs)
         performance = runtime spec - runtime program
 
 -- I need this so that I can get a distribution over Forth words.

@@ -73,7 +73,7 @@ prop_pop stack = stack == foldl1 (.) (replicate 8 $ fst . pop) stack
 prop_runningTimeConstant program  = forAll constant $ \ c ->
   runningTime (program ++ [c]) == runningTime program
 
-prop_evaluateRunningTime program = negate (evaluate program) == runningTime (toNative program)
+prop_evaluateRunningTime program = runtime program == runningTime (toNative program)
 
 prop_displayReadProgram program = program == parseProgram (displayProgram program)
 
