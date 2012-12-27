@@ -44,7 +44,7 @@ inSlot3  = elements $ filter slot3 opcodes
 instance Arbitrary Instrs where arbitrary = oneof [instrs, jump3, jump2, jump1, constant]
 
 instrs, jump3, jump2, jump1, constant :: Gen Instrs
-instrs = Instrs <$> straight <*> straight <*> straight <*> straight
+instrs = Instrs <$> straight <*> straight <*> straight <*> inSlot3
 jump3 = Jump3 <$> straight <*> straight <*> jumps <*> wordBits 3
 jump2 = Jump2 <$> straight <*> jumps <*> wordBits 8
 jump1 = Jump1 <$> jumps <*> wordBits 10
@@ -71,6 +71,8 @@ prop_runningTimeConstant program  = forAll constant $ \ c ->
   runningTime (program ++ [c]) == runningTime program
 
 prop_evaluateRunningTime program = negate (evaluate program) == runningTime (toNative program)
+
+prop_displayReadProgram program = program == parseProgram (displayProgram program)
 
 case_runningTime = do let time = runningTime . parseProgram
                       15.5 @=? time ". . . . @p . . . 10"

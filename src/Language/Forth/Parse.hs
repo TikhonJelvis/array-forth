@@ -1,4 +1,5 @@
-module Language.Forth.Parse (readOpcode, readProgram, ParseError (..), parseProgram) where
+module Language.Forth.Parse (readOpcode, readProgram, ParseError (..),
+                             parseProgram, displayProgram) where
 
 import           Control.Applicative         ((<$>), (<*>))
 
@@ -58,7 +59,19 @@ readProgram = mapM go . separate . words
         jump = wrap isJump NotJump
 
 -- | Reads a program, calling error if the parse fails.
-parseProgram :: String -> [Instrs]
+parseProgram :: String -> NativeProgram
 parseProgram program = case readProgram program of
   Right res -> res
   Left  err -> error $ show err
+
+-- | Displays an instruction word as opcodes and numbers.
+displayInstrs :: Instrs -> String
+displayInstrs (Instrs a b c d)   = unwords $ map show [a, b, c, d]
+displayInstrs (Jump3 a b c addr) = unwords (map show [a, b, c]) ++ " " ++ show addr
+displayInstrs (Jump2 a b addr)   = unwords (map show [a, b]) ++ " " ++ show addr
+displayInstrs (Jump1 a addr)     = show a ++ " " ++ show addr
+displayInstrs (Constant n)       = show n
+
+-- | Displays a whole program as a runnable string of instructions.
+displayProgram :: NativeProgram -> String
+displayProgram = unwords . map displayInstrs
