@@ -10,7 +10,7 @@ name:                array-forth
 -- PVP summary:      +-+------- breaking API changes
 --                   | | +----- non-breaking API additions
 --                   | | | +--- code changes with no API change
-version:             0.1.0.1
+version:             0.1.1.0
 
 -- A short (one-line) description of the package.
 synopsis:            A simple interpreter for arrayForth, the language used on GreenArrays chips.
@@ -44,14 +44,17 @@ cabal-version:       >=1.8
 
 library
   -- Modules exported by the library.
-  exposed-modules:     Language.Forth.Instructions, Language.Forth.Interpreter,
-                       Language.Forth.Stack, Language.Forth.State
+  exposed-modules:     Language.Forth.Distance, Language.Forth.Instructions,
+                       Language.Forth.Interpreter, Language.Forth.Parse,
+                       Language.Forth.Run, Language.Forth.Stack,
+                       Language.Forth.State, Language.Forth.Synthesis
   
   hs-source-dirs:      src
   -- Modules included in this library but not exported.
   -- other-modules:       
   
   -- Other library packages from which modules are imported.
-  build-depends:       base ==4.5.*, OddWord >=1.0.0, vector>=0.9.1
+  build-depends:       base ==4.5.*, mcmc-synthesis >=0.1, MonadRandom ==0.1.*,
+                       OddWord >=1.0.0, split ==0.1.*, vector ==0.9.*
   GHC-options:         -Wall -fno-warn-unused-do-bind -rtsopts -O2
   

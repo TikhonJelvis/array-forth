@@ -1,4 +1,4 @@
-module Distance where
+module Language.Forth.Distance where
 
 import            Data.Bits                   (popCount, xor, Bits)
 
