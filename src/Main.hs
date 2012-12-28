@@ -15,7 +15,7 @@ import           Language.Synthesis.Synthesis    (Problem (..), runningBest,
 main :: IO ()
 main = evalRandIO (synthesizeMhList inclusiveOr) >>= print . (!! 100) . runningBest
 
-inclusiveOr :: Problem Program State
+inclusiveOr :: Problem Program
 inclusiveOr = Problem { score = evaluate program cases distance
                       , prior = Distr.replicate 8 defaultOps
                       , jump  = defaultMutations}
