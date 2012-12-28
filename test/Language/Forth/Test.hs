@@ -63,7 +63,7 @@ straightlineProgram = listOf $ oneof [Opcode <$> straight, number, unused]
 
 main = $(defaultMainGenerator)
 
-run = runNativeProgram startState . parseProgram
+run = runNativeProgram startState . read
 
 -- Instruction utilities tests:
 prop_bits word = word == (toBits $ fromBits word)
@@ -75,7 +75,7 @@ prop_runningTimeConstant program  = forAll constant $ \ c ->
 
 prop_evaluateRunningTime program = runtime program == runningTime (toNative program)
 
-prop_displayReadProgram program = program == parseProgram (displayProgram program)
+prop_displayReadProgram program = program == read (displayProgram program)
 
 -- Returns whether the given instruction word has jump addresses for
 -- all the jumps and has no jumps without addresses.
@@ -89,16 +89,20 @@ isValid Constant{}         = True
 -- For now, we do not really support jumps in the Program type.
 prop_validNative = forAll straightlineProgram $ \ p -> all isValid $ toNative p
 
-case_runningTime = do let time = runningTime . parseProgram
+case_runningTime = do let time = runningTime . read
                       15.5 @=? time ". . . . @p . . . 10"
                       6    @=? time ". . . ."
                       20   @=? time "@p @p @p @p 1 2 3 4"
 
 -- Testing the utility functions for actually synthesizing programs:
-case_toNative1 = parseProgram "@p . @p . 2 10 or . . ." @=?
-                 toNative [Number 2, Opcode Nop, Number 10, Opcode Or]
-case_toNative2 = parseProgram "@p . @p + 2 10" @=?
-                 toNative [Number 2, Opcode Nop, Number 10, Opcode Plus]
+case_toNative = do read "@p . @p . 2 10 or . . ." @=?
+                     toNative [Number 2, Opcode Nop, Number 10, Opcode Or]
+                   read "@p . @p + 2 10" @=?
+                     toNative [Number 2, Opcode Nop, Number 10, Opcode Plus]
+case_fromNative = do [Opcode Nop, Opcode Nop, Opcode Nop, Opcode Nop] @=?
+                       fromNative (read ". . . .")
+                     [Opcode Nop, Number 1, Number 2, Opcode Nop] @=?
+                       fromNative (read ". @p @p . 1 2")
 
 -- Interpreter tests (ported from Racket):
 unchanged regs = assertBool "Something changed!" . and $ zipWith (==) start new

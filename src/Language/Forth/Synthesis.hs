@@ -1,5 +1,6 @@
 {-# LANGUAGE FlexibleInstances    #-}
 {-# LANGUAGE NamedFieldPuns       #-}
+{-# LANGUAGE OverlappingInstances #-}
 {-# LANGUAGE ScopedTypeVariables  #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 module Language.Forth.Synthesis where
@@ -8,12 +9,13 @@ import           Control.Arrow                   (first)
 import           Control.Monad.Random            (Random, random, randomR)
 
 import           Data.Functor                    ((<$>))
-import           Data.List                       (genericLength)
+import           Data.List                       (find, genericLength, (\\))
 import           Data.List.Split                 (chunk)
 
 import           Language.Forth.Distance
 import           Language.Forth.Instructions
 import           Language.Forth.Interpreter
+import           Language.Forth.Parse
 import           Language.Forth.State
 
 import           Language.Synthesis.Distribution (Distr (..), mix,
@@ -27,8 +29,15 @@ data Instruction = Opcode Opcode
                  | Number F18Word
                  | Unused deriving (Show, Eq)
 
+-- | Does the given instruction corresponds to a constant number?
+isNumber :: Instruction -> Bool
+isNumber Number{} = True
+isNumber _        = False
+
 -- | A program to be manipulated by the MCMC synthesizer
 type Program = [Instruction]
+
+instance Read Program where readsPrec _ str = [(fromNative $ read str, "")]
 
 -- | Takes a program as handled by the synthesizer and makes it native
 -- by turning literal numbers into @p and fixing any issues with
@@ -44,6 +53,19 @@ toNative = concatMap (toInstrs . addFetchP) . chunk 4 . fixSlot3 . filter (/= Un
           Instrs a b c d : map (\ (Number n) -> Constant n) numbers
         toInstrs (instrs, consts) =
           toInstrs (take 4 $ instrs ++ repeat (Opcode Nop), consts)
+
+-- | Gets a synthesizer program from a native program. Currently does
+-- not support jumps.
+fromNative :: NativeProgram -> Program
+fromNative = fixNumbers . concatMap extract
+  where extract (Instrs a b c d) = [Opcode a, Opcode b, Opcode c, Opcode d]
+        extract (Constant n)     = [Number n]
+        extract _                = error "Jumps are not yet supported!"
+        fixNumbers [] = []
+        fixNumbers (Opcode FetchP : rest) = case find isNumber rest of
+          Just n  -> n : (fixNumbers $ rest \\ [n])
+          Nothing -> Opcode FetchP : fixNumbers rest
+        fixNumbers (x : rest)   = x : fixNumbers rest
 
 -- | Take a program and ensure that only instructions allowed in the
 -- last slot go there by adding nops as necessary.

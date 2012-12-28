@@ -1,5 +1,8 @@
+{-# LANGUAGE FlexibleInstances    #-}
+{-# LANGUAGE OverlappingInstances #-}
+{-# LANGUAGE TypeSynonymInstances #-}
 module Language.Forth.Parse (readOpcode, readProgram, ParseError (..),
-                             parseProgram, displayProgram) where
+                             displayProgram) where
 
 import           Control.Applicative         ((<$>), (<*>))
 
@@ -32,13 +35,17 @@ readOpcode token = case elemIndex token names of
   Just res -> Right $ toEnum res
   Nothing  -> Left  $ BadOpcode token
 
+instance Read Opcode where readsPrec _ str = case readOpcode str of
+                             Left err -> error $ show err
+                             Right r  -> [(r, "")]
+
 -- | Is the given string a valid number with no other tokens?
 isNumber :: String -> Bool
 isNumber str = let asNumber = reads str :: [(Integer, String)] in
           not (null asNumber) && (null . snd $ head asNumber)
 
 -- | Read a whole program, splitting instructions up into words.
-readProgram :: String -> Either ParseError [Instrs]
+readProgram :: String -> Either ParseError NativeProgram
 readProgram = mapM go . separate . words
   where separate = concatMap (chunk 4) . split (keepDelimsR $ whenElt isNumber)
         go [a, b, c, d] = do c' <- readOpcode c
@@ -58,11 +65,11 @@ readProgram = mapM go . separate . words
         op3 = wrap slot3 NotSlot3
         jump = wrap isJump NotJump
 
--- | Reads a program, calling error if the parse fails.
-parseProgram :: String -> NativeProgram
-parseProgram program = case readProgram program of
-  Right res -> res
-  Left  err -> error $ show err
+instance Read NativeProgram where
+  readsPrec _ str = [(result, "")]
+    where result = case readProgram str of
+            Right res -> res
+            Left  err -> error $ show err
 
 -- | Displays an instruction word as opcodes and numbers.
 displayInstrs :: Instrs -> String
