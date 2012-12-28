@@ -15,12 +15,13 @@ import           Data.List.Split                 (chunk)
 import           Language.Forth.Distance
 import           Language.Forth.Instructions
 import           Language.Forth.Interpreter
-import           Language.Forth.Parse
 import           Language.Forth.State
 
 import           Language.Synthesis.Distribution (Distr (..), mix,
                                                   negativeInfinity, randInt,
                                                   uniform)
+import           Language.Synthesis.Mutations    hiding (mix)
+import qualified Language.Synthesis.Mutations    as M
 
 -- | Represents a single instruction as viewed by the
 -- synthesizer. This can be an opcode, a numeric literal or a token
@@ -29,15 +30,8 @@ data Instruction = Opcode Opcode
                  | Number F18Word
                  | Unused deriving (Show, Eq)
 
--- | Does the given instruction corresponds to a constant number?
-isNumber :: Instruction -> Bool
-isNumber Number{} = True
-isNumber _        = False
-
 -- | A program to be manipulated by the MCMC synthesizer
 type Program = [Instruction]
-
-instance Read Program where readsPrec _ str = [(fromNative $ read str, "")]
 
 -- | Takes a program as handled by the synthesizer and makes it native
 -- by turning literal numbers into @p and fixing any issues with
@@ -66,6 +60,8 @@ fromNative = fixNumbers . concatMap extract
           Just n  -> n : (fixNumbers $ rest \\ [n])
           Nothing -> Opcode FetchP : fixNumbers rest
         fixNumbers (x : rest)   = x : fixNumbers rest
+        isNumber Number{} = True
+        isNumber _        = False
 
 -- | Take a program and ensure that only instructions allowed in the
 -- last slot go there by adding nops as necessary.
@@ -114,10 +110,16 @@ instance Random F18Word where
 -- distribution over 18-bit words.
 defaultOps :: Distr Instruction
 defaultOps = mix [(constants, 1.0), (uniform [Unused], 1.0),
-                  (uniform  instrs, genericLength instrs)]
-  where instrs = map Opcode $ filter (not . isJump) opcodes
+                  (uniform instrs, genericLength instrs)]
+  where instrs = map Opcode $ filter (not . isJump) opcodes \\ [MultiplyStep]
         constants = let Distr {sample, logProbability} = randInt (0, maxBound)
                         logProb (Number n) = logProbability n
                         logProb _          = negativeInfinity in
                     Distr { sample = Number <$> sample
                           , logProbability = logProb }
+
+-- | The default mutations to try. For now, this will either change an
+-- instruction or swap two instructions in the program, with equal
+-- probability.
+defaultMutations :: Mutation Program
+defaultMutations = M.mix [(mutateInstruction defaultOps, 1), (swapInstructions, 1)]
