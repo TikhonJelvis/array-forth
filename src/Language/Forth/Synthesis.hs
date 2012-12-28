@@ -28,10 +28,16 @@ import qualified Language.Synthesis.Mutations    as M
 -- representing an unused slot.
 data Instruction = Opcode Opcode
                  | Number F18Word
-                 | Unused deriving (Show, Eq)
+                 | Unused deriving Eq
 
 -- | A program to be manipulated by the MCMC synthesizer
 type Program = [Instruction]
+
+instance Show Instruction where
+  show (Opcode op) = show op
+  show (Number n)  = show n
+  show Unused      = "_"
+  showList = (++) . unwords . map show
 
 -- | Takes a program as handled by the synthesizer and makes it native
 -- by turning literal numbers into @p and fixing any issues with
