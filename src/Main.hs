@@ -20,6 +20,6 @@ inclusiveOr = Problem { score = evaluate program cases distance
                       , prior = Distr.replicate 8 defaultOps
                       , jump  = defaultMutations}
   where program = read "over over or a! and a or"
-        cases = [startState {t = 0 }, startState {t = maxBound},
-                 startState {t = 1}, startState {t = maxBound - 1}]
+        cases = [startState {t = 0, s = 123}, startState {t = maxBound, s = 123},
+                 startState {t = 1, s = 123}, startState {t = maxBound - 1, s = 123}]
         distance = registers [t]
