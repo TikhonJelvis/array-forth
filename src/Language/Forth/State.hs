@@ -59,7 +59,7 @@ rpush state@State {r, returnStack} word =
 -- | Read the memory at a location given by a Forth word.
 (!) :: Memory -> F18Word -> F18Word
 memory ! i | i' < V.length memory = memory V.! i'
-           | otherwise            = error "Memory out of bounds." 
+           | otherwise            = error "Memory out of bounds."
   where i' = fromIntegral i
 
 -- | Set the memory using Forth words.
