@@ -81,27 +81,23 @@ fixSlot3 program
           Number{}  -> FetchP
           Unused    -> error "Cannot have unused slot in fixSlot3!"
 
--- | Returns a measure of the quality of the program. For now this is
--- only based on the performance of the program.
-runtime :: Program -> Double
-runtime = runningTime . toNative
-
 -- | Runs a given program from the default starting state.
 runProgram :: State -> Program -> State
 runProgram start = runNativeProgram start . toNative
 
--- | Compare a program against an input/output pair using the given
--- distance function.
-test :: Distance -> Program -> (State, State) -> Double
-test distance program (input, output) = distance output $ runProgram input program
-
 -- | Given a specification program and some inputs, evaluate a program
 -- against the specification for both performance and correctness.
 evaluate :: Program -> [State] -> Distance -> Program -> Double
-evaluate spec inputs score program = 10 * correctness + performance
-  where pairs = zip inputs $ map (`runProgram` spec) inputs
-        correctness = -sum (test score program <$> pairs)
-        performance = runtime spec - runtime program
+evaluate spec inputs score program = 10 * correctness + performance / genericLength inputs
+  where load prog state = setProgram 0 (toNative prog) state
+        specs = load spec <$> inputs
+        progs = load program <$> inputs
+        cases = zip (eval <$> specs) $ (*2) . countSteps <$> specs
+        correctness = -sum (zipWith test progs cases)
+        performance = sum $ zipWith (-) (countTime <$> specs) (countTime <$> progs)
+        test prog (output, steps) = case throttle steps prog of
+          Just res -> score output res
+          Nothing  -> read "Infinity" -- TODO: Do this more elegantly?
 
 -- I need this so that I can get a distribution over Forth words.
 instance Random F18Word where
@@ -117,8 +113,7 @@ instance Random F18Word where
 defaultOps :: Distr Instruction
 defaultOps = mix [(constants, 1.0), (uniform [Unused], 1.0),
                   (uniform instrs, genericLength instrs)]
-  where instrs = map Opcode $ filter (not . isJump) opcodes \\
-                 [MultiplyStep, Unext, Exec, Ret, FetchP, StoreP]
+  where instrs = map Opcode $ filter (not . isJump) opcodes \\ [Unext, Exec, Ret]
         constants = let Distr {sample, logProbability} = randInt (0, maxBound)
                         logProb (Number n) = logProbability n
                         logProb _          = negativeInfinity in

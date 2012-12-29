@@ -18,7 +18,7 @@ emptyMem = V.replicate 64 0
 
 -- | A state representing the registers, stacks and memory of a core.
 data State =
-  State { a, b, p, r, s, t       :: F18Word
+  State { a, b, i, p, r, s, t    :: F18Word
         , dataStack, returnStack :: Stack
         , memory                 :: Memory  }
 
@@ -30,7 +30,7 @@ instance Show State where
 -- | The state corresponding to a core with no programs loaded and no
 -- instructions executed.
 startState :: State
-startState = State 0 0 0 0 0 0 empty empty emptyMem
+startState = State 0 0 0 0 0 0 0 empty empty emptyMem
 
 -- | The next word of instructions to execute in the given state.
 next :: State -> Instrs
@@ -72,5 +72,5 @@ set mem index value = mem // [(toMem index, value)]
 -- | Loads the given program into memory at the given starting
 -- position.
 setProgram :: F18Word -> NativeProgram -> State -> State
-setProgram start program state@State {memory} =
-  state {memory = memory // zip [toMem start..] (toBits <$> program)}
+setProgram start program state@State {memory} = state' {i = toBits $ next state'}
+  where state' = state {memory = memory // zip [toMem start..] (toBits <$> program)}

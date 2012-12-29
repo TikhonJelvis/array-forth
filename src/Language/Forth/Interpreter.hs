@@ -25,18 +25,47 @@ word (Constant _) _           = error "Cannot execute a constant!"
 -- | Executes a single instruction in the given state, incrementing
 -- the program counter.
 step :: State -> State
-step state@State {p} = word (next state) $ state {p = p + 1}
+step state@State {p} = word (next state) $ state {p = p + 1, i = toBits $ next state}
 
--- | Executes instructions until it either hits four nops or all 0s.
-stepProgram :: State -> State
-stepProgram state | done      = state
-                  | otherwise = stepProgram $ step state
-  where done = next state == Instrs Nop Nop Nop Nop || next state == Instrs Ret Ret Ret Ret
+-- | Returns a trace of the program's execution. The trace is a list
+-- of the state of the chip after each step.
+traceProgram :: State -> [State]
+traceProgram = iterate step
+
+-- | Trace a program until it either hits four nops or all 0s.
+stepProgram :: State -> [State]
+stepProgram = takeWhile (not . done) . traceProgram
+  where done state = i state == 0x39ce7 || i state == 0
+
+-- | Runs the program unil it hits a terminal state, returning only
+-- the resulting state.
+eval :: State -> State
+eval start = case stepProgram start of
+  []   -> start
+  res  -> last res
 
 -- | Executes the specified program on the given state until it hits a
--- word made up of four nops or all 0s.
+-- "terminal" word--a word made up of four nops or all 0s.
 runNativeProgram :: State -> NativeProgram -> State
-runNativeProgram start program = stepProgram $ setProgram 0 program start
+runNativeProgram start program = eval $ setProgram 0 program start
+
+-- | Steps the current state until it hits a terminal word,
+-- calculating the time each opcode takes. This estimates the running
+-- time for a particular trace of the program.
+countTime :: State -> Double
+countTime = runningTime . map (fromBits . i) . stepProgram
+
+-- | Counts how many steps it takes to reach a terminal word. Each
+-- step represents executing a single word's worth of instructions.
+countSteps :: State -> Int
+countSteps = length . stepProgram
+
+-- | Runs the program, returning the result if it terminates in under
+-- n steps and Nothing otherwise.
+throttle :: Int -> State -> Maybe State
+throttle steps state | null res || length res >= steps = Nothing
+                     | otherwise                     = Just $ last res
+  where res = stepProgram state
 
 -- | Does the given opcode cause the current word to stop executing?
 endWord :: Opcode -> Bool
