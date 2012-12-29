@@ -56,10 +56,15 @@ library
   -- Other library packages from which modules are imported.
   build-depends:       base ==4.5.*, mcmc-synthesis >=0.1, MonadRandom ==0.1.*,
                        OddWord >=1.0.0, split ==0.1.*, vector ==0.9.*
-  GHC-options:         -Wall -fno-warn-unused-do-bind -rtsopts -O2
+  GHC-options:         -Wall -fno-warn-orphans -rtsopts -O2
 
 executable mcmc-demo
   Main-is:             src/Main.hs
   build-depends:       base ==4.5.*, mcmc-synthesis >=0.1, array-forth,
                        MonadRandom ==0.1.*
+  GHC-options:         -Wall -rtsopts -O2
+
+executable array-forth
+  Main-is:             src/Run.hs
+  build-depends:       base ==4.5.*, vector ==0.9.*, split ==0.1.*, array-forth
   GHC-options:         -Wall -rtsopts -O2

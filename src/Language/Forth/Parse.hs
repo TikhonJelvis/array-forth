@@ -1,8 +1,8 @@
 {-# LANGUAGE FlexibleInstances    #-}
 {-# LANGUAGE OverlappingInstances #-}
 {-# LANGUAGE TypeSynonymInstances #-}
-module Language.Forth.Parse (readOpcode, readNativeProgram, ParseError (..),
-                             displayProgram) where
+module Language.Forth.Parse (readOpcode, readProgram, readNativeProgram, ParseError (..),
+                             displayProgram, isNumber) where
 
 import           Control.Applicative         ((<$>), (<*>))
 
