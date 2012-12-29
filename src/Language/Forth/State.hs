@@ -56,18 +56,21 @@ rpush :: State -> F18Word -> State
 rpush state@State {r, returnStack} word =
   state {r = word, returnStack = push returnStack r}
 
+-- | Force an address to be in range of memory: [0,64).
+toMem :: (Integral a, Integral b) => a -> b
+toMem = fromIntegral . (`mod` 64)
+
 -- | Read the memory at a location given by a Forth word.
 (!) :: Memory -> F18Word -> F18Word
-memory ! i | i' < V.length memory = memory V.! i'
-           | otherwise            = error "Memory out of bounds."
-  where i' = fromIntegral i
+memory ! i | toMem i < V.length memory = memory V.! toMem i
+           | otherwise                 = error "Memory out of bounds."
 
 -- | Set the memory using Forth words.
 set :: Memory -> F18Word -> F18Word -> Memory
-set mem index value = mem // [(fromIntegral index, value)]
+set mem index value = mem // [(toMem index, value)]
 
 -- | Loads the given program into memory at the given starting
 -- position.
 setProgram :: F18Word -> NativeProgram -> State -> State
 setProgram start program state@State {memory} =
-  state {memory = memory // zip [fromIntegral start..] (toBits <$> program)}
+  state {memory = memory // zip [toMem start..] (toBits <$> program)}
