@@ -2,8 +2,8 @@
 module Language.Forth.State where
 
 import           Data.Functor                ((<$>))
-import           Data.Vector                 (Vector, (//))
-import qualified Data.Vector                 as V
+import           Data.Vector.Unboxed         (Vector, (//))
+import qualified Data.Vector.Unboxed         as V
 
 import           Text.Printf                 (printf)
 
@@ -11,16 +11,16 @@ import           Language.Forth.Instructions
 import           Language.Forth.Stack
 
 -- | The chip's RAM and ROM
-type Memory = Vector F18Word
+type Memory = Vector Int
 
 emptyMem :: Memory
 emptyMem = V.replicate 64 0
 
 -- | A state representing the registers, stacks and memory of a core.
 data State =
-  State { a, b, i, p, r, s, t    :: F18Word
-        , dataStack, returnStack :: Stack
-        , memory                 :: Memory  }
+  State { a, b, i, p, r, s, t    :: !F18Word
+        , dataStack, returnStack :: !Stack
+        , memory                 :: !Memory  }
 
 instance Show State where
   show State {p, a, b, r, s, t, dataStack} =
@@ -62,15 +62,16 @@ toMem = fromIntegral . (`mod` 64)
 
 -- | Read the memory at a location given by a Forth word.
 (!) :: Memory -> F18Word -> F18Word
-memory ! i | toMem i < V.length memory = memory V.! toMem i
+memory ! i | toMem i < V.length memory = fromIntegral $ memory V.! toMem i
            | otherwise                 = error "Memory out of bounds."
 
 -- | Set the memory using Forth words.
 set :: Memory -> F18Word -> F18Word -> Memory
-set mem index value = mem // [(toMem index, value)]
+set mem index value = mem // [(toMem index, fromIntegral $ value)]
 
 -- | Loads the given program into memory at the given starting
 -- position.
 setProgram :: F18Word -> NativeProgram -> State -> State
 setProgram start program state@State {memory} = state' {i = toBits $ next state'}
-  where state' = state {memory = memory // zip [toMem start..] (toBits <$> program)}
+  where state' = state {memory = memory // prog}
+        prog = zip [toMem start..] (fromIntegral . toBits <$> program)
