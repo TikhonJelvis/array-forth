@@ -1,8 +1,8 @@
 {-# LANGUAGE NamedFieldPuns #-}
 module Language.Forth.Interpreter where
 
-import           Data.Bits                   (bitSize, complement, shift,
-                                              testBit, xor, (.&.))
+import           Data.Bits                   (bit, bitSize, complement, shift,
+                                              testBit, xor, (.&.), (.|.))
 
 import           Language.Forth.Instructions
 import           Language.Forth.State
@@ -42,6 +42,7 @@ runNativeProgram start program = stepProgram $ setProgram 0 program start
 endWord :: Opcode -> Bool
 endWord = (`elem` [Ret, Exec, Jump, Call, Unext, Next, If, MinusIf])
 
+-- | Executes an opcode on the given state.
 execute :: Opcode -> State -> State
 execute op state@State {a, b, p, r, s, t, memory} = case op of
   Ret          -> fst . rpop $ state {p = r}
@@ -55,7 +56,7 @@ execute op state@State {a, b, p, r, s, t, memory} = case op of
   StorePlus    -> state' {a = a + 1, memory = set memory a top}
   StoreB       -> state' {memory = set memory b top}
   Store        -> state' {memory = set memory a top}
-  MultiplyStep -> error "Not implemented yet!"
+  MultiplyStep -> multiplyStep
   Times2       -> state {t = t `shift` 1}
   Div2         -> state {t = t `shift` (-1)}
   Not          -> state {t = complement t}
@@ -73,7 +74,16 @@ execute op state@State {a, b, p, r, s, t, memory} = case op of
   SetA         -> state' {a = top}
   _            -> error "Cannot jump without an address!"
   where (state', top) = dpop state
+        multiplyStep
+          | even a    = let t0  = (t .&. 1) `shift` (bitSize t - 1) in
+                        state { a = t0 .|. a `shift` (-1)
+                              , t = t .&. bit 17 .|. t `shift` (-1)}
+          | otherwise = let sum0 = (s + t) `shift` (bitSize t - 1)
+                            sum17 = (s + t) .&. bit 17 in
+                        state { a = sum0 .|. a `shift` (-1)
+                              , t = sum17 .|. (s + t) `shift` (-1) }
 
+-- | Execute a jump instruction to the given address.
 jump :: Opcode -> Addr -> State -> State
 jump op addr state@State{p, r, t} = case op of
   Jump    -> state {p = addr}
