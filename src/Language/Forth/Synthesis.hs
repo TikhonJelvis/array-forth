@@ -85,13 +85,17 @@ fixSlot3 program
 runProgram :: State -> Program -> State
 runProgram start = runNativeProgram start . toNative
 
+-- | Loads the given synthesizer-friendly program into the given
+-- state.
+load :: Program -> State -> State
+load prog state = setProgram 0 (toNative prog) state
+        
 -- | Given a specification program and some inputs, evaluate a program
 -- against the specification for both performance and correctness.
 evaluate :: Program -> [State] -> Distance -> Program -> Double
 evaluate spec inputs score program =
   0.1 * (10 * correctness + performance / genericLength inputs)
-  where load prog state = setProgram 0 (toNative prog) state
-        specs = load spec <$> inputs
+  where specs = load spec <$> inputs
         progs = load program <$> inputs
         cases = zip (eval <$> specs) $ (*2) . countSteps <$> specs
         correctness = -sum (zipWith test progs cases)
