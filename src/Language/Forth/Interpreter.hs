@@ -68,8 +68,8 @@ countSteps = length . stepProgram
 -- | Runs the program, returning the result if it terminates in under
 -- n steps and Nothing otherwise.
 throttle :: Int -> State -> Maybe State
-throttle steps state | null res || length res >= steps = Nothing
-                     | otherwise                     = Just $ last res
+throttle steps state | null res || not (null $ drop steps res) = Nothing
+                     | otherwise                            = Just $ last res
   where res = stepProgram state
 
 -- | Does the given opcode cause the current word to stop executing?
