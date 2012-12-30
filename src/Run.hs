@@ -3,7 +3,7 @@ module Main where
 
 import           Data.Functor               ((<$))
 import           Data.List.Split            (chunk)
-import qualified Data.Vector                as V
+import qualified Data.Vector.Unboxed        as V
 
 import           Language.Forth.Interpreter (eval, runNativeProgram)
 import           Language.Forth.Parse       (isNumber, readProgram)

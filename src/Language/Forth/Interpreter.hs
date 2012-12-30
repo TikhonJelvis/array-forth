@@ -1,3 +1,4 @@
+{-# LANGUAGE BangPatterns   #-}
 {-# LANGUAGE NamedFieldPuns #-}
 module Language.Forth.Interpreter where
 
@@ -32,17 +33,21 @@ step state@State {p} = word (next state) $ state {p = p + 1, i = toBits $ next s
 traceProgram :: State -> [State]
 traceProgram = iterate step
 
+-- | Returns whether a state is done--that is, whether it has hit four
+-- nops or all 0s.
+done :: State -> Bool
+done state = i state == 0x39ce7 || i state == 0
+
 -- | Trace a program until it either hits four nops or all 0s.
 stepProgram :: State -> [State]
 stepProgram = takeWhile (not . done) . traceProgram
-  where done state = i state == 0x39ce7 || i state == 0
 
 -- | Runs the program unil it hits a terminal state, returning only
 -- the resulting state.
 eval :: State -> State
-eval start = case stepProgram start of
-  []   -> start
-  res  -> last res
+eval !state | done state' = state
+            | otherwise   = eval state'
+  where state' = step state
 
 -- | Executes the specified program on the given state until it hits a
 -- "terminal" word--a word made up of four nops or all 0s.
