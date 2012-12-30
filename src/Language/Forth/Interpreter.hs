@@ -1,4 +1,3 @@
-{-# LANGUAGE BangPatterns   #-}
 {-# LANGUAGE NamedFieldPuns #-}
 module Language.Forth.Interpreter where
 
@@ -45,9 +44,7 @@ stepProgram = takeWhile (not . done) . traceProgram
 -- | Runs the program unil it hits a terminal state, returning only
 -- the resulting state.
 eval :: State -> State
-eval !state | done state' = state
-            | otherwise   = eval state'
-  where state' = step state
+eval state = last $ state : stepProgram state
 
 -- | Executes the specified program on the given state until it hits a
 -- "terminal" word--a word made up of four nops or all 0s.
@@ -68,9 +65,9 @@ countSteps = length . stepProgram
 -- | Runs the program, returning the result if it terminates in under
 -- n steps and Nothing otherwise.
 throttle :: Int -> State -> Maybe State
-throttle steps state | null res || not (null $ drop steps res) = Nothing
-                     | otherwise                            = Just $ last res
-  where res = stepProgram state
+throttle steps state | null res || length res == steps = Nothing
+                     | otherwise                     = Just $ last res
+  where res = take steps $ stepProgram state
 
 -- | Does the given opcode cause the current word to stop executing?
 endWord :: Opcode -> Bool
