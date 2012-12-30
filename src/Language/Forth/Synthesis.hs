@@ -88,13 +88,14 @@ runProgram start = runNativeProgram start . toNative
 -- | Given a specification program and some inputs, evaluate a program
 -- against the specification for both performance and correctness.
 evaluate :: Program -> [State] -> Distance -> Program -> Double
-evaluate spec inputs score program = 10 * correctness + performance / genericLength inputs
+evaluate spec inputs score program =
+  0.1 * (10 * correctness + performance / genericLength inputs)
   where load prog state = setProgram 0 (toNative prog) state
         specs = load spec <$> inputs
         progs = load program <$> inputs
         cases = zip (eval <$> specs) $ (*2) . countSteps <$> specs
         correctness = -sum (zipWith test progs cases)
-        performance = sum $ zipWith (-) (countTime <$> specs) (countTime <$> progs)
+        performance = 0
         test prog (output, steps) = case throttle steps prog of
           Just res -> score output res
           Nothing  -> read "Infinity" -- TODO: Do this more elegantly?

@@ -2,7 +2,7 @@
 {-# LANGUAGE OverlappingInstances #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 module Language.Forth.Parse (readOpcode, readProgram, readNativeProgram, ParseError (..),
-                             displayProgram, isNumber) where
+                             isNumber) where
 
 import           Control.Applicative         ((<$>), (<*>))
 
@@ -91,15 +91,3 @@ instance Read Program where
     where result = case readProgram str of
             Right res -> res
             Left  err -> error $ show err
-
--- | Displays an instruction word as opcodes and numbers.
-displayInstrs :: Instrs -> String
-displayInstrs (Instrs a b c d)   = unwords $ map show [a, b, c, d]
-displayInstrs (Jump3 a b c addr) = unwords (map show [a, b, c]) ++ " " ++ show addr
-displayInstrs (Jump2 a b addr)   = unwords (map show [a, b]) ++ " " ++ show addr
-displayInstrs (Jump1 a addr)     = show a ++ " " ++ show addr
-displayInstrs (Constant n)       = show n
-
--- | Displays a whole program as a runnable string of instructions.
-displayProgram :: NativeProgram -> String
-displayProgram = unwords . map displayInstrs

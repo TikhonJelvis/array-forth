@@ -2,6 +2,8 @@ module Main where
 
 import           Control.Monad.Random            (evalRandIO)
 
+import           Data.List                       (find)
+
 import           Language.Forth.Distance         (registers)
 import           Language.Forth.Parse            ()
 import           Language.Forth.State            (State (..), startState)
@@ -13,7 +15,8 @@ import           Language.Synthesis.Synthesis    (Problem (..), runningBest,
                                                   synthesizeMhList)
 
 main :: IO ()
-main = evalRandIO (synthesizeMhList inclusiveOr) >>= print . (!! 10000) . runningBest
+main = evalRandIO (synthesizeMhList inclusiveOr) >>= print . find good . runningBest
+  where good (_, score) = score >= 0
 
 inclusiveOr :: Problem Program
 inclusiveOr = Problem { score = evaluate program cases distance

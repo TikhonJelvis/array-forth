@@ -87,7 +87,15 @@ data Instrs = Instrs Opcode Opcode Opcode Opcode
             | Jump3 Opcode Opcode Opcode Addr
             | Jump2 Opcode Opcode Addr
             | Jump1 Opcode Addr
-            | Constant F18Word deriving (Show, Eq)
+            | Constant F18Word deriving (Eq)
+
+instance Show Instrs where
+  show (Instrs a b c d)   = unwords $ map show [a, b, c, d]
+  show (Jump3 a b c addr) = unwords (map show [a, b, c]) ++ " " ++ show addr
+  show (Jump2 a b addr)   = unwords (map show [a, b]) ++ " " ++ show addr
+  show (Jump1 a addr)     = show a ++ " " ++ show addr
+  show (Constant n)       = show n
+  showList = (++) . unwords . map show
 
 -- | A program in the F18A instruction set.
 type NativeProgram = [Instrs]

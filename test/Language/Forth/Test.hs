@@ -74,7 +74,11 @@ prop_pop stack = stack == foldl1 (.) (replicate 8 $ fst . pop) stack
 prop_runningTimeConstant program  = forAll constant $ \ c ->
   runningTime (program ++ [c]) == runningTime program
 
-prop_displayReadProgram program = program == read (displayProgram program)
+prop_showReadProgram :: Program -> Bool
+prop_showReadProgram program = program == read (show program)
+
+prop_showReadNative :: NativeProgram -> Bool
+prop_showReadNative program = program == read (show program)
 
 -- Returns whether the given instruction word has jump addresses for
 -- all the jumps and has no jumps without addresses.
