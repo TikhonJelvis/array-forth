@@ -41,18 +41,30 @@ instance Show Instruction where
 
 -- | Takes a program as handled by the synthesizer and makes it native
 -- by turning literal numbers into @p and fixing any issues with
--- instructions going into the last slot.
+-- instructions going into the last slot as well as prepending
+-- nops before + instructions.
 toNative :: Program -> NativeProgram
-toNative = concatMap (toInstrs . addFetchP) . chunk 4 . fixSlot3 . filter (/= Unused)
-  where addFetchP [] = ([], [])
+toNative = concatMap toInstrs . chunk 4 . addNops . concatMap nopsPlus . filter (/= Unused)
+  where nop = Opcode Nop
+        addNops program
+          | length program < 4 = program
+          | slot3 op4          = take 4 program ++ addNops (drop 4 program)
+          | otherwise          = take 3 program ++ [nop] ++ addNops (drop 3 program)
+          where op4 = case program !! 3 of
+                  Opcode op -> op
+                  Number{}  -> FetchP
+                  Unused    -> error "Cannot have unused slot in fixSlot3!"
+        nopsPlus (Opcode Plus) = [nop, Opcode Plus]
+        nopsPlus x             = [x]
+        toInstrs = convert . addFetchP
+        addFetchP [] = ([], [])
         addFetchP (n@Number{} : rest) =
           let (instrs, consts) = addFetchP rest in (Opcode FetchP : instrs, n : consts)
         addFetchP (instr : rest) =
           let (instrs, consts) = addFetchP rest in (instr : instrs, consts)
-        toInstrs ([Opcode a, Opcode b, Opcode c, Opcode d], numbers) =
+        convert ([Opcode a, Opcode b, Opcode c, Opcode d], numbers) =
           Instrs a b c d : map (\ (Number n) -> Constant n) numbers
-        toInstrs (instrs, consts) =
-          toInstrs (take 4 $ instrs ++ repeat (Opcode Nop), consts)
+        convert (instrs, consts) = convert (take 4 $ instrs ++ repeat nop, consts)
 
 -- | Gets a synthesizer program from a native program. Currently does
 -- not support jumps.
@@ -69,18 +81,6 @@ fromNative = fixNumbers . concatMap extract
         isNumber Number{} = True
         isNumber _        = False
 
--- | Take a program and ensure that only instructions allowed in the
--- last slot go there by adding nops as necessary.
-fixSlot3 :: Program -> Program
-fixSlot3 program
-  | length program < 4 = program
-  | slot3 op4          = take 4 program ++ fixSlot3 (drop 4 program)
-  | otherwise          = take 3 program ++ [Opcode Nop] ++ fixSlot3 (drop 3 program)
-  where op4 = case program !! 3 of
-          Opcode op -> op
-          Number{}  -> FetchP
-          Unused    -> error "Cannot have unused slot in fixSlot3!"
-
 -- | Runs a given program from the default starting state.
 runProgram :: State -> Program -> State
 runProgram start = runNativeProgram start . toNative
@@ -89,7 +89,7 @@ runProgram start = runNativeProgram start . toNative
 -- state.
 load :: Program -> State -> State
 load prog state = setProgram 0 (toNative prog) state
-        
+
 -- | Given a specification program and some inputs, evaluate a program
 -- against the specification for both performance and correctness.
 evaluate :: Program -> [State] -> Distance -> Program -> Double

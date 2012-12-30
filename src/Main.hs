@@ -19,10 +19,10 @@ main :: IO ()
 main = evalRandIO (synthesizeMhList inclusiveOr) >>= print . find good . runningBest
   where good (_, v) = v >= 1
 
-test :: Int -> Distance -> String -> String -> State -> Double
-test steps distance p₁ p₂ input = let r₁ = eval $ load (read p₁) input
-                                      r₂ = eval $ load (read p₂) input in
-                                     distance r₁ r₂ 
+test :: Distance -> String -> String -> State -> Double
+test distance p₁ p₂ input = let r₁ = eval $ load (read p₁) input
+                                r₂ = eval $ load (read p₂) input in
+                            distance r₁ r₂ 
                                      
 inclusiveOr :: Problem Program
 inclusiveOr = Problem { score = evaluate program cases distance
