@@ -1,0 +1,5 @@
+@p push . . 213568 
+@p a + . 1
+pop dup a! .
+or a push .
+a! next 2
