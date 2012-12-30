@@ -100,8 +100,9 @@ evaluate spec inputs score program =
         cases = zip3 (last <$> specs) (length <$> specs) (countTime <$> specs)
         (correctness, performance) = unzip $ zipWith test progs cases
         test prog (output, steps, time) = case throttle steps prog of
-          Just res -> (-score output (last res), time - countTime res)
-          Nothing  -> (read "-Infinity", read "-Infinity") -- TODO: Do this more elegantly?
+          Right res -> calc res
+          Left res  -> let (a, b) = calc res in (a - 1e10, b - 1e10)
+          where calc res = (-score output (last res), time - countTime res)
 
 -- I need this so that I can get a distribution over Forth words.
 instance Random F18Word where

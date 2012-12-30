@@ -53,9 +53,10 @@ countTime = runningTime . map (fromBits . i)
 
 -- | Checks that the program trace terminated in at most n steps,
 -- returning Nothing otherwise.
-throttle :: Int -> [State] -> Maybe [State]
-throttle n state | null res || length res == n = Nothing
-                 | otherwise                 = Just res
+throttle :: Int -> [State] -> Either [State] [State]
+throttle n state | null res       = Right state
+                 | length res == n = Left state
+                 | otherwise      = Right res
   where res = take n state
 
 -- | Does the given opcode cause the current word to stop executing?
