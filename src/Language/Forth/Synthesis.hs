@@ -94,15 +94,14 @@ load prog state = setProgram 0 (toNative prog) state
 -- against the specification for both performance and correctness.
 evaluate :: Program -> [State] -> Distance -> Program -> Double
 evaluate spec inputs score program =
-  0.1 * (10 * correctness + performance / genericLength inputs)
-  where specs = load spec <$> inputs
-        progs = load program <$> inputs
-        cases = zip (eval <$> specs) $ (*2) . countSteps <$> specs
-        correctness = -sum (zipWith test progs cases)
-        performance = 0
-        test prog (output, steps) = case throttle steps prog of
-          Just res -> score output res
-          Nothing  -> read "Infinity" -- TODO: Do this more elegantly?
+  0.1 * (10 * sum correctness + sum performance / genericLength inputs)
+  where specs = stepProgram . load spec <$> inputs
+        progs = stepProgram . load program <$> inputs
+        cases = zip3 (last <$> specs) (length <$> specs) (countTime <$> specs)
+        (correctness, performance) = unzip $ zipWith test progs cases
+        test prog (output, steps, time) = case throttle steps prog of
+          Just res -> (-score output (last res), time - countTime res)
+          Nothing  -> (read "-Infinity", read "-Infinity") -- TODO: Do this more elegantly?
 
 -- I need this so that I can get a distribution over Forth words.
 instance Random F18Word where

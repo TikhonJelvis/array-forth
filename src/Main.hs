@@ -1,12 +1,11 @@
 module Main where
 
-import           Control.Applicative             ((<$>), (<*>))
 import           Control.Monad.Random            (evalRandIO)
 
 import           Data.List                       (find)
 
 import           Language.Forth.Distance         (Distance, registers)
-import           Language.Forth.Interpreter      (throttle)
+import           Language.Forth.Interpreter      (eval)
 import           Language.Forth.Parse            ()
 import           Language.Forth.State            (State (..), startState)
 import           Language.Forth.Synthesis        (Program, defaultMutations,
@@ -18,15 +17,13 @@ import           Language.Synthesis.Synthesis    (Problem (..), runningBest,
 
 main :: IO ()
 main = evalRandIO (synthesizeMhList inclusiveOr) >>= print . find good . runningBest
-  where good (_, score) = score >= 0
+  where good (_, v) = v >= 1
 
 test :: Int -> Distance -> String -> String -> State -> Double
-test steps distance p₁ p₂ input = let r₁ = throttle steps (load (read p₁) startState)
-                                      r₂ = throttle steps (load (read p₂) startState) in
-                                     case distance <$> r₁ <*> r₂ of
-                                       Just d  -> d
-                                       Nothing -> read "Infinity"
-
+test steps distance p₁ p₂ input = let r₁ = eval $ load (read p₁) input
+                                      r₂ = eval $ load (read p₂) input in
+                                     distance r₁ r₂ 
+                                     
 inclusiveOr :: Problem Program
 inclusiveOr = Problem { score = evaluate program cases distance
                       , prior = Distr.replicate 8 defaultOps

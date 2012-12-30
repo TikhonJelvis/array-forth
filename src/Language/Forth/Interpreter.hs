@@ -32,14 +32,10 @@ step state@State {p} = word (next state) $ state {p = p + 1, i = toBits $ next s
 traceProgram :: State -> [State]
 traceProgram = iterate step
 
--- | Returns whether a state is done--that is, whether it has hit four
--- nops or all 0s.
-done :: State -> Bool
-done state = i state == 0x39ce7 || i state == 0
-
 -- | Trace a program until it either hits four nops or all 0s.
 stepProgram :: State -> [State]
 stepProgram = takeWhile (not . done) . traceProgram
+  where done state = i state == 0x39ce7 || i state == 0
 
 -- | Runs the program unil it hits a terminal state, returning only
 -- the resulting state.
@@ -51,23 +47,16 @@ eval state = last $ state : stepProgram state
 runNativeProgram :: State -> NativeProgram -> State
 runNativeProgram start program = eval $ setProgram 0 program start
 
--- | Steps the current state until it hits a terminal word,
--- calculating the time each opcode takes. This estimates the running
--- time for a particular trace of the program.
-countTime :: State -> Double
-countTime = runningTime . map (fromBits . i) . stepProgram
+-- | Estimates the execution time of a program trace.
+countTime :: [State] -> Double
+countTime = runningTime . map (fromBits . i)
 
--- | Counts how many steps it takes to reach a terminal word. Each
--- step represents executing a single word's worth of instructions.
-countSteps :: State -> Int
-countSteps = length . stepProgram
-
--- | Runs the program, returning the result if it terminates in under
--- n steps and Nothing otherwise.
-throttle :: Int -> State -> Maybe State
-throttle steps state | null res || length res == steps = Nothing
-                     | otherwise                     = Just $ last res
-  where res = take steps $ stepProgram state
+-- | Checks that the program trace terminated in at most n steps,
+-- returning Nothing otherwise.
+throttle :: Int -> [State] -> Maybe [State]
+throttle n state | null res || length res == n = Nothing
+                 | otherwise                 = Just res
+  where res = take n state
 
 -- | Does the given opcode cause the current word to stop executing?
 endWord :: Opcode -> Bool
