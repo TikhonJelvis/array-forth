@@ -54,8 +54,8 @@ countTime = runningTime . map (fromBits . i)
 -- | Checks that the program trace terminated in at most n steps,
 -- returning Nothing otherwise.
 throttle :: Int -> [State] -> Either [State] [State]
-throttle n state | null res       = Right state
-                 | length res == n = Left state
+throttle n state | null res       = Right [startState]
+                 | length res == n = Left res
                  | otherwise      = Right res
   where res = take n state
 
