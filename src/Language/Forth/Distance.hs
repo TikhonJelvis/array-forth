@@ -11,8 +11,8 @@ import            Language.Forth.State
 type Distance = State -> State -> Double
 
 -- | Counts the number of bits that differ between two numbers.
-countBits :: Bits n => n -> n -> Int
-countBits n₁ n₂ = popCount $ n₁ `xor` n₂
+countBits :: (Integral n, Bits n) => n -> n -> Int
+countBits n₁ n₂ = popCount $ (fromIntegral n₁ :: Int) `xor` fromIntegral n₂
 
 -- | Return a distance function that counts the different bits between
 -- the given registers. You could use it like `compareRegisters [s, t]`.
