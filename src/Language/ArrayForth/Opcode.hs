@@ -15,7 +15,7 @@ type Addr = F18Word
 -- | Each F18A instruction, ordered by opcode.
 data Opcode = Ret                -- ;
             | Exec               -- ex
-            | Jump               -- name ;
+            | Jmp                -- name ;
             | Call               -- name
             | Unext              -- unext
             | Next               -- next
@@ -80,7 +80,7 @@ fromOpcode = fromIntegral . fromEnum
 -- | Returns whether the given opcode is a jump instruction expecting
 -- an address.
 isJump :: Opcode -> Bool
-isJump = (`elem` [Jump, Call, Next, If, MinusIf])
+isJump = (`elem` [Jmp, Call, Next, If, MinusIf])
 
 -- | Can the given opcode go in the last slot?
 slot3 :: Opcode -> Bool

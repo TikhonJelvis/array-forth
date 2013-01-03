@@ -54,7 +54,8 @@ instance Arbitrary Instruction where
   arbitrary = oneof [opcode, number, unused]
 
 opcode, number, unused :: Gen Instruction
-opcode = Opcode <$> arbitrary
+opcode = Opcode <$> straight
+jump   = Jump <$> jumps <*> arbitrary 
 number = Number <$> arbitrary
 unused = return Unused
 

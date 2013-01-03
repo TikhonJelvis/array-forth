@@ -63,7 +63,7 @@ throttle n state | null res       = Right [startState]
 
 -- | Does the given opcode cause the current word to stop executing?
 endWord :: Opcode -> Bool
-endWord = (`elem` [Ret, Exec, Jump, Call, Unext, Next, If, MinusIf])
+endWord = (`elem` [Ret, Exec, Jmp, Call, Unext, Next, If, MinusIf])
 
 -- | Executes an opcode on the given state.
 execute :: Opcode -> State -> State
@@ -109,7 +109,7 @@ execute op state@State {a, b, p, r, s, t, memory} = case op of
 -- | Execute a jump instruction to the given address.
 jump :: Opcode -> Addr -> State -> State
 jump op addr state@State{p, r, t} = case op of
-  Jump    -> state {p = addr}
+  Jmp     -> state {p = addr}
   Call    -> (rpush state p) {p = addr}
   Next    -> if r == 0 then fst $ rpop state else state {r = r - 1, p = addr}
   If      -> if t /= 0 then state {p = addr} else state

@@ -4,6 +4,7 @@
 module Language.ArrayForth.NativeProgram where
 
 import           Control.Applicative        ((<$>), (<*>))
+import           Control.Monad              ((<=<))
 
 import           Data.Bits                  (shift, (.&.), (.|.))
 import           Data.List.Split            (chunk, keepDelimsR, split, whenElt)
@@ -31,11 +32,17 @@ instance Show Instrs where
 -- | A program in the F18A instruction set.
 type NativeProgram = [Instrs]
 
+-- | Splits a list into chunks of at most four, breaking off a chunk
+-- whenever it sees an element matching the given predicate. This is
+-- useful for splitting a program along word boundaries, accounting
+-- for jump addresses.
+splitWords :: (a -> Bool) -> [a] -> [[a]]
+splitWords isNum = chunk 4 <=< split (keepDelimsR $ whenElt isNum)
+
 -- | Read a whole program, splitting instructions up into words.
 readNativeProgram :: String -> Either ParseError NativeProgram
-readNativeProgram = mapM go . separate . words
-  where separate = concatMap (chunk 4) . split (keepDelimsR $ whenElt isNumber)
-        go [a, b, c, d] = do c' <- readOpcode c
+readNativeProgram = mapM go . splitWords isNumber . words
+  where go [a, b, c, d] = do c' <- readOpcode c
                              if not $ isJump c'
                                then Instrs <$> op a <*> op b <*> op c <*> op3 d
                                else Jump3 <$> op a <*> op b <*> jump c <*> readWord d
