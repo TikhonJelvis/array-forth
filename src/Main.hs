@@ -7,9 +7,10 @@ import           Data.List                       (find)
 import           Language.Forth.Distance         (Distance, registers)
 import           Language.Forth.Interpreter      (eval)
 import           Language.Forth.Parse            ()
+import           Language.Forth.Program          (Program, load)
 import           Language.Forth.State            (State (..), startState)
-import           Language.Forth.Synthesis        (Program, defaultMutations,
-                                                  defaultOps, evaluate, load)
+import           Language.Forth.Synthesis        (defaultMutations, defaultOps,
+                                                  evaluate)
 
 import qualified Language.Synthesis.Distribution as Distr
 import           Language.Synthesis.Synthesis    (Problem (..), runningBest,
@@ -31,8 +32,8 @@ run = evalRandIO (synthesizeMhList inclusiveOr) >>= print . find good . runningB
 test :: Distance -> String -> String -> State -> Double
 test distance p₁ p₂ input = let r₁ = eval $ load (read p₁) input
                                 r₂ = eval $ load (read p₂) input in
-                            distance r₁ r₂ 
-                                     
+                            distance r₁ r₂
+
 inclusiveOr :: Problem Program
 inclusiveOr = Problem { score = evaluate program cases distance
                       , prior = Distr.replicate 8 defaultOps

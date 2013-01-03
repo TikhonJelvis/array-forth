@@ -1,13 +1,14 @@
 {-# LANGUAGE NamedFieldPuns #-}
 module Language.Forth.State where
 
-import           Data.Functor                ((<$>))
-import           Data.Vector.Unboxed         (Vector, (//))
-import qualified Data.Vector.Unboxed         as V
+import           Data.Functor                 ((<$>))
+import           Data.Vector.Unboxed          (Vector, (//))
+import qualified Data.Vector.Unboxed          as V
 
-import           Text.Printf                 (printf)
+import           Text.Printf                  (printf)
 
-import           Language.Forth.Instructions
+import           Language.Forth.NativeProgram
+import           Language.Forth.Opcode        (F18Word)
 import           Language.Forth.Stack
 
 -- | The chip's RAM and ROM

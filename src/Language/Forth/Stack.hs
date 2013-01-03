@@ -1,13 +1,13 @@
 {-# LANGUAGE BangPatterns #-}
 module Language.Forth.Stack (empty, push, pop, fill, Stack) where
 
-import           Prelude                     hiding ((++))
+import           Prelude                      hiding ((++))
 
-import           Data.List                   (foldl')
-import           Data.Vector.Unboxed         ((!), (++))
-import qualified Data.Vector.Unboxed         as V
+import           Data.List                    (foldl')
+import           Data.Vector.Unboxed          ((!), (++))
+import qualified Data.Vector.Unboxed          as V
 
-import           Language.Forth.Instructions
+import           Language.Forth.Opcode        (F18Word)
 
 newtype Stack = Stack (V.Vector Int) deriving (Eq)
 

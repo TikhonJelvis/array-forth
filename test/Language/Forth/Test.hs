@@ -5,18 +5,17 @@
 module Main where
 
 import           Control.Applicative                  ((<$>), (<*>))
-import           Control.Monad                        (zipWithM)
 
 import           Data.Bits                            (complement, xor, (.&.))
-import           Data.List                            (genericLength)
 
-import           Language.Forth.Instructions
 import           Language.Forth.Interpreter
-import           Language.Forth.Parse
+import           Language.Forth.NativeProgram
+import           Language.Forth.Opcode
+import           Language.Forth.Parse                 ()
+import           Language.Forth.Program
 import           Language.Forth.Stack
 import           Language.Forth.State                 hiding (State (..))
 import qualified Language.Forth.State                 as S
-import           Language.Forth.Synthesis
 
 import           Test.Framework.Providers.HUnit
 import           Test.Framework.Providers.QuickCheck2

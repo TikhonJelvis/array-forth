@@ -4,16 +4,18 @@
 module Language.Forth.Parse (readOpcode, readProgram, readNativeProgram, ParseError (..),
                              isNumber) where
 
-import           Control.Applicative         ((<$>), (<*>))
+import           Control.Applicative          ((<$>), (<*>))
 
-import           Data.List                   (elemIndex)
-import           Data.List.Split             (chunk, keepDelimsR, split,
-                                              whenElt)
+import           Data.List                    (elemIndex)
+import           Data.List.Split              (chunk, keepDelimsR, split,
+                                               whenElt)
 
-import           Text.Printf                 (printf)
+import           Text.Printf                  (printf)
 
-import           Language.Forth.Instructions
-import           Language.Forth.Synthesis
+import           Language.Forth.NativeProgram
+import           Language.Forth.Opcode
+import           Language.Forth.Program
+
 
 -- | Possible ways the input string can be malformed.
 data ParseError = BadOpcode String

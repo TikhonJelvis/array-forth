@@ -44,9 +44,14 @@ cabal-version:       >=1.8
 
 library
   -- Modules exported by the library.
-  exposed-modules:     Language.Forth.Distance, Language.Forth.Instructions,
-                       Language.Forth.Interpreter, Language.Forth.Parse,
-                       Language.Forth.Stack, Language.Forth.State,
+  exposed-modules:     Language.Forth.Distance, 
+                       Language.Forth.Interpreter,
+                       Language.Forth.NativeProgram,
+                       Language.Forth.Opcode,
+                       Language.Forth.Parse,
+                       Language.Forth.Program,
+                       Language.Forth.Stack,
+                       Language.Forth.State,
                        Language.Forth.Synthesis
   
   hs-source-dirs:      src

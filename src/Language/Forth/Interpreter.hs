@@ -1,10 +1,11 @@
 {-# LANGUAGE NamedFieldPuns #-}
 module Language.Forth.Interpreter where
 
-import           Data.Bits                   (bit, bitSize, complement, shift,
-                                              testBit, xor, (.&.), (.|.))
+import           Data.Bits                    (bit, bitSize, complement, shift,
+                                               testBit, xor, (.&.), (.|.))
 
-import           Language.Forth.Instructions
+import           Language.Forth.NativeProgram
+import           Language.Forth.Opcode
 import           Language.Forth.State
 
 -- | Runs a single word's worth of instructions starting from the given state.

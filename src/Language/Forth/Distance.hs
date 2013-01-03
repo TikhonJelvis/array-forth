@@ -2,7 +2,7 @@ module Language.Forth.Distance where
 
 import            Data.Bits                   (popCount, xor, Bits)
 
-import            Language.Forth.Instructions
+import            Language.Forth.Opcode        (F18Word)
 import            Language.Forth.State
 
 -- | A function that computes a measure of "distance" between two

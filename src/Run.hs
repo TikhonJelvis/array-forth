@@ -7,8 +7,8 @@ import qualified Data.Vector.Unboxed        as V
 
 import           Language.Forth.Interpreter (eval, runNativeProgram)
 import           Language.Forth.Parse       (isNumber, readProgram)
+import           Language.Forth.Program     (toNative)
 import           Language.Forth.State       (State (..), setProgram, startState)
-import           Language.Forth.Synthesis   (toNative)
 
 import           System.Environment         (getArgs)
 import           System.IO                  (hFlush, stdout)
