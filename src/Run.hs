@@ -6,8 +6,8 @@ import           Data.List.Split                 (chunk)
 import qualified Data.Vector.Unboxed             as V
 
 import           Language.ArrayForth.Interpreter (eval, runNativeProgram)
-import           Language.ArrayForth.Parse       (isNumber, readProgram)
-import           Language.ArrayForth.Program     (toNative)
+import           Language.ArrayForth.Parse       (isNumber)
+import           Language.ArrayForth.Program     (toNative, readProgram)
 import           Language.ArrayForth.State       (State (..), setProgram,
                                                   startState)
 

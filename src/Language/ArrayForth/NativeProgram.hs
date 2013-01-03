@@ -1,10 +1,16 @@
 {-# LANGUAGE FlexibleInstances    #-}
+{-# LANGUAGE OverlappingInstances #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 module Language.ArrayForth.NativeProgram where
 
+import           Control.Applicative        ((<$>), (<*>))
+
 import           Data.Bits                  (shift, (.&.), (.|.))
+import           Data.List.Split            (chunk, keepDelimsR, split, whenElt)
+import           Data.String                (IsString, fromString)
 
 import           Language.ArrayForth.Opcode
+import           Language.ArrayForth.Parse
 
 -- | Represents a word in memory. This word can either contain
 -- opcodes, opcodes and a jump address or just a constant number.
@@ -24,6 +30,32 @@ instance Show Instrs where
 
 -- | A program in the F18A instruction set.
 type NativeProgram = [Instrs]
+
+-- | Read a whole program, splitting instructions up into words.
+readNativeProgram :: String -> Either ParseError NativeProgram
+readNativeProgram = mapM go . separate . words
+  where separate = concatMap (chunk 4) . split (keepDelimsR $ whenElt isNumber)
+        go [a, b, c, d] = do c' <- readOpcode c
+                             if not $ isJump c'
+                               then Instrs <$> op a <*> op b <*> op c <*> op3 d
+                               else Jump3 <$> op a <*> op b <*> jump c <*> readWord d
+        go [a, b, c]    = Jump2 <$> op a <*> jump b <*> readWord c
+        go [a, b]       = Jump1 <$> jump a <*> readWord b
+        go [a]          = Constant <$> readWord a
+        go _            = error "Wrong number of instruction tokens!"
+        wrap cond err str = do code <- readOpcode str
+                               if cond code then Right code else Left $ err code
+        op = wrap (not . isJump) $ NoAddr . show
+        op3 = wrap slot3 $ NotSlot3 . show
+        jump = wrap isJump $ NotJump . show
+
+instance Read NativeProgram where
+  readsPrec _ str = [(result, "")]
+    where result = case readNativeProgram str of
+            Right res -> res
+            Left  err -> error $ show err
+
+instance IsString NativeProgram where fromString = read
 
 -- | Returns the given instructions as an actual word. This assumes
 -- the address is sized appropriately.

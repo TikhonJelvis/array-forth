@@ -1,6 +1,9 @@
 module Language.ArrayForth.Opcode where
 
-import           Data.Word.Odd (Word18)
+import           Data.List                 (elemIndex)
+import           Data.Word.Odd             (Word18)
+
+import           Language.ArrayForth.Parse (ParseError (..))
 
 -- | The 18-bit word type used by Greenarrays chips.
 type F18Word = Word18
@@ -55,6 +58,16 @@ opcodes :: [Opcode]
 opcodes = [minBound..maxBound]
 
 instance Show Opcode where show op = names !! fromEnum op
+
+-- | Tries to read a given string as an opcode from the list of names.
+readOpcode :: String -> Either ParseError Opcode
+readOpcode token = case elemIndex token names of
+  Just res -> Right $ toEnum res
+  Nothing  -> Left  $ BadOpcode token
+
+instance Read Opcode where readsPrec _ str = case readOpcode str of
+                             Left err -> error $ show err
+                             Right r  -> [(r, "")]
 
 -- | Converts a word to an opcode. The word has to be < 32.
 toOpcode :: F18Word -> Opcode

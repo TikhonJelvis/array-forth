@@ -1,11 +1,17 @@
+{-# LANGUAGE FlexibleInstances    #-}
+{-# LANGUAGE OverlappingInstances #-}
+{-# LANGUAGE TypeSynonymInstances #-}
 module Language.ArrayForth.Program where
 
+import           Data.Functor                      ((<$>))
 import           Data.List                         (find, (\\))
 import           Data.List.Split                   (chunk)
+import           Data.String                       (IsString, fromString)
 
 import           Language.ArrayForth.Interpreter
 import           Language.ArrayForth.NativeProgram
 import           Language.ArrayForth.Opcode
+import qualified Language.ArrayForth.Parse         as P
 import           Language.ArrayForth.State         (State, setProgram)
 
 -- | Represents a single instruction as viewed by the
@@ -23,6 +29,25 @@ instance Show Instruction where
   show (Number n)  = show n
   show Unused      = "_"
   showList = (++) . unwords . map show
+
+-- | Tries to parse the given string as an instruction, which can
+-- either be a number, an opcode or "_" representing Unused.
+readInstruction :: String -> Either P.ParseError Instruction
+readInstruction "_"                  = Right Unused
+readInstruction str | P.isNumber str = Number <$> P.readWord str
+                    | otherwise      = Opcode <$> readOpcode str
+
+-- | Reads a program in the synthesizer's format.
+readProgram :: String -> Either P.ParseError Program
+readProgram = mapM readInstruction . words
+
+instance Read Program where
+  readsPrec _ str = [(result, "")]
+    where result = case readProgram str of
+            Right res -> res
+            Left  err -> error $ show err
+
+instance IsString Program where fromString = read
 
 -- | Takes a program as handled by the synthesizer and makes it native
 -- by turning literal numbers into @p and fixing any issues with
