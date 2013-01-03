@@ -1,20 +1,20 @@
 {-# LANGUAGE FlexibleInstances    #-}
 {-# LANGUAGE OverlappingInstances #-}
 {-# LANGUAGE TypeSynonymInstances #-}
-module Language.Forth.Parse (readOpcode, readProgram, readNativeProgram, ParseError (..),
+module Language.ArrayForth.Parse (readOpcode, readProgram, readNativeProgram, ParseError (..),
                              isNumber) where
 
-import           Control.Applicative          ((<$>), (<*>))
+import           Control.Applicative               ((<$>), (<*>))
 
-import           Data.List                    (elemIndex)
-import           Data.List.Split              (chunk, keepDelimsR, split,
-                                               whenElt)
+import           Data.List                         (elemIndex)
+import           Data.List.Split                   (chunk, keepDelimsR, split,
+                                                    whenElt)
 
-import           Text.Printf                  (printf)
+import           Text.Printf                       (printf)
 
-import           Language.Forth.NativeProgram
-import           Language.Forth.Opcode
-import           Language.Forth.Program
+import           Language.ArrayForth.NativeProgram
+import           Language.ArrayForth.Opcode
+import           Language.ArrayForth.Program
 
 
 -- | Possible ways the input string can be malformed.

@@ -1,23 +1,24 @@
 {-# LANGUAGE NamedFieldPuns #-}
-module Language.Forth.Interpreter where
+module Language.ArrayForth.Interpreter where
 
-import           Data.Bits                    (bit, bitSize, complement, shift,
-                                               testBit, xor, (.&.), (.|.))
+import           Data.Bits                         (bit, bitSize, complement,
+                                                    shift, testBit, xor, (.&.),
+                                                    (.|.))
 
-import           Language.Forth.NativeProgram
-import           Language.Forth.Opcode
-import           Language.Forth.State
+import           Language.ArrayForth.NativeProgram
+import           Language.ArrayForth.Opcode
+import           Language.ArrayForth.State
 
 -- | Runs a single word's worth of instructions starting from the given state.
 word :: Instrs -> State -> State
-word (Instrs a b c d) state   = let s1 = execute a state
-                                    s2 = if endWord a then s1 else execute b s1
-                                    s3 = if endWord a || endWord b
-                                         then s2 else execute c s2 in
-                                if endWord a || endWord b || endWord c then s3 else execute d s3
-word (Jump3 a b c addr) state = let s1 = execute a state
-                                    s2 = if endWord a then s1 else execute b s1 in
-                                if endWord a || endWord b then s2 else jump c addr s2
+word (Instrs a b c d) state   = let s₁ = execute a state
+                                    s₂ = if endWord a then s₁ else execute b s₁
+                                    s₃ = if endWord a || endWord b
+                                         then s₂ else execute c s₂ in
+                                if endWord a || endWord b || endWord c then s₃ else execute d s₃
+word (Jump3 a b c addr) state = let s₁ = execute a state
+                                    s₂ = if endWord a then s₁ else execute b s₁ in
+                                if endWord a || endWord b then s₂ else jump c addr s₂
 word (Jump2 a b addr) state   = let s' = execute a state in
                                 if endWord a then s' else jump b addr s'
 word (Jump1 a addr) state     = jump a addr state

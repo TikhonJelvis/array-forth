@@ -3,7 +3,7 @@
 {-# LANGUAGE OverlappingInstances #-}
 {-# LANGUAGE ScopedTypeVariables  #-}
 {-# LANGUAGE TypeSynonymInstances #-}
-module Language.Forth.Synthesis where
+module Language.ArrayForth.Synthesis where
 
 import           Control.Arrow                   (first)
 import           Control.Monad.Random            (Random, random, randomR)
@@ -11,11 +11,11 @@ import           Control.Monad.Random            (Random, random, randomR)
 import           Data.Functor                    ((<$>))
 import           Data.List                       (genericLength, (\\))
 
-import           Language.Forth.Distance
-import           Language.Forth.Interpreter
-import           Language.Forth.Opcode
-import           Language.Forth.Program
-import           Language.Forth.State
+import           Language.ArrayForth.Distance
+import           Language.ArrayForth.Interpreter
+import           Language.ArrayForth.Opcode
+import           Language.ArrayForth.Program
+import           Language.ArrayForth.State
 
 import           Language.Synthesis.Distribution (Distr (..), mix,
                                                   negativeInfinity, randInt,

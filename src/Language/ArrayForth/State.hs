@@ -1,15 +1,15 @@
 {-# LANGUAGE NamedFieldPuns #-}
-module Language.Forth.State where
+module Language.ArrayForth.State where
 
-import           Data.Functor                 ((<$>))
-import           Data.Vector.Unboxed          (Vector, (//))
-import qualified Data.Vector.Unboxed          as V
+import           Data.Functor                      ((<$>))
+import           Data.Vector.Unboxed               (Vector, (//))
+import qualified Data.Vector.Unboxed               as V
 
-import           Text.Printf                  (printf)
+import           Text.Printf                       (printf)
 
-import           Language.Forth.NativeProgram
-import           Language.Forth.Opcode        (F18Word)
-import           Language.Forth.Stack
+import           Language.ArrayForth.NativeProgram
+import           Language.ArrayForth.Opcode        (F18Word)
+import           Language.ArrayForth.Stack
 
 -- | The chip's RAM and ROM
 type Memory = Vector Int

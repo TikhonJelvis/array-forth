@@ -8,14 +8,14 @@ import           Control.Applicative                  ((<$>), (<*>))
 
 import           Data.Bits                            (complement, xor, (.&.))
 
-import           Language.Forth.Interpreter
-import           Language.Forth.NativeProgram
-import           Language.Forth.Opcode
-import           Language.Forth.Parse                 ()
-import           Language.Forth.Program
-import           Language.Forth.Stack
-import           Language.Forth.State                 hiding (State (..))
-import qualified Language.Forth.State                 as S
+import           Language.ArrayForth.Interpreter
+import           Language.ArrayForth.NativeProgram
+import           Language.ArrayForth.Opcode
+import           Language.ArrayForth.Parse                 ()
+import           Language.ArrayForth.Program
+import           Language.ArrayForth.Stack
+import           Language.ArrayForth.State                 hiding (State (..))
+import qualified Language.ArrayForth.State                 as S
 
 import           Test.Framework.Providers.HUnit
 import           Test.Framework.Providers.QuickCheck2

@@ -1,19 +1,20 @@
 {-# LANGUAGE NamedFieldPuns #-}
 module Main where
 
-import           Data.Functor               ((<$))
-import           Data.List.Split            (chunk)
-import qualified Data.Vector.Unboxed        as V
+import           Data.Functor                    ((<$))
+import           Data.List.Split                 (chunk)
+import qualified Data.Vector.Unboxed             as V
 
-import           Language.Forth.Interpreter (eval, runNativeProgram)
-import           Language.Forth.Parse       (isNumber, readProgram)
-import           Language.Forth.Program     (toNative)
-import           Language.Forth.State       (State (..), setProgram, startState)
+import           Language.ArrayForth.Interpreter (eval, runNativeProgram)
+import           Language.ArrayForth.Parse       (isNumber, readProgram)
+import           Language.ArrayForth.Program     (toNative)
+import           Language.ArrayForth.State       (State (..), setProgram,
+                                                  startState)
 
-import           System.Environment         (getArgs)
-import           System.IO                  (hFlush, stdout)
+import           System.Environment              (getArgs)
+import           System.IO                       (hFlush, stdout)
 
-import           Text.Printf                (printf)
+import           Text.Printf                     (printf)
 
 main :: IO ()
 main = do args <- getArgs

@@ -1,9 +1,9 @@
-module Language.Forth.Distance where
+module Language.ArrayForth.Distance where
 
-import            Data.Bits                   (popCount, xor, Bits)
+import           Data.Bits                  (Bits, popCount, xor)
 
-import            Language.Forth.Opcode        (F18Word)
-import            Language.Forth.State
+import           Language.ArrayForth.Opcode (F18Word)
+import           Language.ArrayForth.State
 
 -- | A function that computes a measure of "distance" between two
 -- states. The larger the returned number, the more different the

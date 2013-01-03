@@ -1,12 +1,12 @@
-module Language.Forth.Program where
+module Language.ArrayForth.Program where
 
-import           Data.List                    (find, (\\))
-import           Data.List.Split              (chunk)
+import           Data.List                         (find, (\\))
+import           Data.List.Split                   (chunk)
 
-import           Language.Forth.Interpreter
-import           Language.Forth.NativeProgram
-import           Language.Forth.Opcode
-import           Language.Forth.State         (State, setProgram)
+import           Language.ArrayForth.Interpreter
+import           Language.ArrayForth.NativeProgram
+import           Language.ArrayForth.Opcode
+import           Language.ArrayForth.State         (State, setProgram)
 
 -- | Represents a single instruction as viewed by the
 -- synthesizer. This can be an opcode, a numeric literal or a token

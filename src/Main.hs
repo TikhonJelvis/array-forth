@@ -4,12 +4,12 @@ import           Control.Monad.Random            (evalRandIO)
 
 import           Data.List                       (find)
 
-import           Language.Forth.Distance         (Distance, registers)
-import           Language.Forth.Interpreter      (eval)
-import           Language.Forth.Parse            ()
-import           Language.Forth.Program          (Program, load)
-import           Language.Forth.State            (State (..), startState)
-import           Language.Forth.Synthesis        (defaultMutations, defaultOps,
+import           Language.ArrayForth.Distance    (Distance, registers)
+import           Language.ArrayForth.Interpreter (eval)
+import           Language.ArrayForth.Parse       ()
+import           Language.ArrayForth.Program     (Program, load)
+import           Language.ArrayForth.State       (State (..), startState)
+import           Language.ArrayForth.Synthesis   (defaultMutations, defaultOps,
                                                   evaluate)
 
 import qualified Language.Synthesis.Distribution as Distr

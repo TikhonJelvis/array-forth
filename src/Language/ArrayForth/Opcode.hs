@@ -1,4 +1,4 @@
-module Language.Forth.Opcode where
+module Language.ArrayForth.Opcode where
 
 import           Data.Word.Odd (Word18)
 

@@ -1,10 +1,10 @@
 {-# LANGUAGE FlexibleInstances    #-}
 {-# LANGUAGE TypeSynonymInstances #-}
-module Language.Forth.NativeProgram where
+module Language.ArrayForth.NativeProgram where
 
-import           Data.Bits             (shift, (.&.), (.|.))
+import           Data.Bits                  (shift, (.&.), (.|.))
 
-import           Language.Forth.Opcode
+import           Language.ArrayForth.Opcode
 
 -- | Represents a word in memory. This word can either contain
 -- opcodes, opcodes and a jump address or just a constant number.
