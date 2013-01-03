@@ -16,8 +16,17 @@ import           Language.Synthesis.Synthesis    (Problem (..), runningBest,
                                                   synthesizeMhList)
 
 main :: IO ()
-main = evalRandIO (synthesizeMhList inclusiveOr) >>= print . find good . runningBest
-  where good (_, v) = v >= 1
+main = verbose
+
+good :: (Program, Double) -> Bool
+good (_, val) = val >= 0.5
+
+verbose :: IO ()
+verbose = do ls <- evalRandIO (synthesizeMhList inclusiveOr)
+             mapM_ print . zip ls . takeWhile (not . good) $ runningBest ls
+
+run :: IO ()
+run = evalRandIO (synthesizeMhList inclusiveOr) >>= print . find good . runningBest
 
 test :: Distance -> String -> String -> State -> Double
 test distance p₁ p₂ input = let r₁ = eval $ load (read p₁) input

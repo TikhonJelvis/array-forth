@@ -136,4 +136,4 @@ toOpcodes Constant{}       = []
 -- take 1.5 nanoseconds and slower ones take 5. For now, this estimate
 -- ignores control flow like ifs and loops.
 runningTime :: NativeProgram -> Double
-runningTime = sum . map opcodeTime . concatMap toOpcodes
+runningTime = sum . map opcodeTime . reverse . dropWhile (== Nop) . reverse . concatMap toOpcodes

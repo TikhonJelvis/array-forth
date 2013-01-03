@@ -93,14 +93,14 @@ isValid Constant{}         = True
 prop_validNative = forAll straightlineProgram $ \ p -> all isValid $ toNative p
 
 case_runningTime = do let time = runningTime . read
-                      15.5 @=? time ". . . . @p . . . 10"
-                      6    @=? time ". . . ."
+                      11.0 @=? time ". . . . @p . . . 10"
+                      0    @=? time ". . . ."
                       20   @=? time "@p @p @p @p 1 2 3 4"
 
 -- Testing the utility functions for actually synthesizing programs:
 case_toNative = do read "@p . @p . 2 10 or . . ." @=?
                      toNative [Number 2, Opcode Nop, Number 10, Opcode Or]
-                   read "@p . @p + 2 10" @=?
+                   read "@p . @p . 2 10 + . . ." @=?
                      toNative [Number 2, Opcode Nop, Number 10, Opcode Plus]
 case_fromNative = do [Opcode Nop, Opcode Nop, Opcode Nop, Opcode Nop] @=?
                        fromNative (read ". . . .")
