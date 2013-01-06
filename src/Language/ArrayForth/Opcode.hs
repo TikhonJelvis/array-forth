@@ -8,10 +8,6 @@ import           Language.ArrayForth.Parse (ParseError (..))
 -- | The 18-bit word type used by Greenarrays chips.
 type F18Word = Word18
 
--- | A memory address, which is included in the various jump
--- instructions.
-type Addr = F18Word
-
 -- | Each F18A instruction, ordered by opcode.
 data Opcode = Ret                -- ;
             | Exec               -- ex

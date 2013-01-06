@@ -55,7 +55,7 @@ instance Arbitrary Instruction where
 
 opcode, number, unused :: Gen Instruction
 opcode = Opcode <$> straight
-jump   = Jump <$> jumps <*> arbitrary 
+jump   = Jump <$> jumps <*> (Concrete <$> arbitrary)
 number = Number <$> arbitrary
 unused = return Unused
 
@@ -102,6 +102,8 @@ case_toNative = do read "@p . @p . 2 10 or . . ." @=?
                      toNative [Number 2, Opcode Nop, Number 10, Opcode Or]
                    read "@p . @p . 2 10 + . . ." @=?
                      toNative [Number 2, Opcode Nop, Number 10, Opcode Plus]
+                   read "jump 5 . + @p @p 1 2 @p . . . 3" @=?
+                     toNative (read ":foo jump :bar + 1 2 3 :bar")
 case_fromNative = do [Opcode Nop, Opcode Nop, Opcode Nop, Opcode Nop] @=?
                        fromNative (read ". . . .")
                      [Opcode Nop, Number 1, Number 2, Opcode Nop] @=?

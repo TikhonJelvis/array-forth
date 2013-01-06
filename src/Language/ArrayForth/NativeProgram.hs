@@ -16,9 +16,9 @@ import           Language.ArrayForth.Parse
 -- | Represents a word in memory. This word can either contain
 -- opcodes, opcodes and a jump address or just a constant number.
 data Instrs = Instrs Opcode Opcode Opcode Opcode
-            | Jump3 Opcode Opcode Opcode Addr
-            | Jump2 Opcode Opcode Addr
-            | Jump1 Opcode Addr
+            | Jump3 Opcode Opcode Opcode F18Word
+            | Jump2 Opcode Opcode F18Word
+            | Jump1 Opcode F18Word
             | Constant F18Word deriving (Eq)
 
 instance Show Instrs where

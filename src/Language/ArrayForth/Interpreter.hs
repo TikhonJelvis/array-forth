@@ -107,7 +107,7 @@ execute op state@State {a, b, p, r, s, t, memory} = case op of
                               , t = sum17 .|. (s + t) `shift` (-1) }
 
 -- | Execute a jump instruction to the given address.
-jump :: Opcode -> Addr -> State -> State
+jump :: Opcode -> F18Word -> State -> State
 jump op addr state@State{p, r, t} = case op of
   Jmp     -> state {p = addr}
   Call    -> (rpush state p) {p = addr}

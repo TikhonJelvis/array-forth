@@ -15,12 +15,19 @@ import           Language.ArrayForth.Opcode
 import qualified Language.ArrayForth.Parse         as P
 import           Language.ArrayForth.State         (State, setProgram)
 
+data Addr = Concrete F18Word | Abstract String deriving Eq
+
+instance Show Addr where
+  show (Concrete n) = show n
+  show (Abstract s) = ':' : s
+
 -- | Represents a single instruction as viewed by the
 -- synthesizer. This can be an opcode, a numeric literal or a token
 -- representing an unused slot.
 data Instruction = Opcode Opcode
                  | Jump Opcode Addr
                  | Number F18Word
+                 | Label String
                  | Unused deriving Eq
 
 -- | A program to be manipulated by the MCMC synthesizer
@@ -30,6 +37,7 @@ instance Show Instruction where
   show (Opcode op)    = show op
   show (Jump op addr) = show op ++ " " ++ show addr
   show (Number n)     = show n
+  show (Label s)      = ':' : s
   show Unused         = "_"
   showList = (++) . unwords . map show
 
@@ -37,6 +45,7 @@ instance Show Instruction where
 -- either be a number, an opcode or "_" representing Unused.
 readInstruction :: String -> Either P.ParseError Instruction
 readInstruction "_"                  = Right Unused
+readInstruction (':':label)          = Right $ Label label
 readInstruction str | P.isNumber str = Number <$> P.readWord str
                     | otherwise      = Opcode <$> readOpcode str
 
@@ -45,7 +54,8 @@ readProgram :: String -> Either P.ParseError Program
 readProgram = fixJumps <=< mapM readInstruction . words
   where fixJumps [] = Right []
         fixJumps (Opcode op : rest) | isJump op = case rest of
-          Number n : program -> (Jump op n :) <$> fixJumps program
+          Number n : program -> (Jump op (Concrete n) :) <$> fixJumps program
+          Label s : program  -> (Jump op (Abstract s) :) <$> fixJumps program
           _                  -> Left . P.NoAddr $ show op
         fixJumps (good : rest) = (good :) <$> fixJumps rest
 
@@ -62,11 +72,18 @@ instance IsString Program where fromString = read
 -- instructions going into the last slot as well as prepending
 -- nops before + instructions.
 toNative :: Program -> NativeProgram
-toNative = (>>= toInstrs) . splitWords bound . fixSlot3 . (>>= nopsPlus) . jumps . filter (/= Unused)
-  where nop = Opcode Nop
-        jumps []                                        = []
-        jumps (Opcode op : Number n : rest) | isJump op = Jump op n : jumps rest
-        jumps (op : rest)                               = op : jumps rest
+toNative = (>>= toInstrs) . splitWords bound . fixSlot3 . (>>= nopsPlus) . labels . filter (/= Unused)
+  where labels program = map convert $ filter (not . label) program
+          where label Label{} = True
+                label _       = False
+                values = go 0 program
+                go _ []                  = []
+                go n (Label name : rest) = (name, n) : go n rest
+                go n (_ : rest)          = go (n + 1) rest
+                convert (Jump op (Abstract l)) = maybe (error $ "Unknown label " ++ l)
+                                                 (Jump op . Concrete) $ lookup l values
+                convert x                      = x
+        nop = Opcode Nop
         bound Jump{} = True
         bound _      = False
         nopsPlus (Opcode Plus) = [nop, Opcode Plus]
@@ -86,19 +103,21 @@ toNative = (>>= toInstrs) . splitWords bound . fixSlot3 . (>>= nopsPlus) . jumps
         addFetchP (instr : rest) =
           let (instrs, consts) = addFetchP rest in (instr : instrs, consts)
         convert [Opcode a, Opcode b, Opcode c, Opcode d] = Instrs a b c d
-        convert [Opcode a, Opcode b, Jump c addr]        = Jump3 a b c addr
-        convert [Opcode a, Jump b addr]                  = Jump2 a b addr
-        convert [Jump a addr]                            = Jump1 a addr
+        convert [Opcode a, Opcode b, Jump c addr]        = Jump3 a b c $ concrete addr
+        convert [Opcode a, Jump b addr]                  = Jump2 a b $ concrete addr
+        convert [Jump a addr]                            = Jump1 a $ concrete addr
         convert instrs                                   = convert . take 4 $ instrs ++ repeat nop
+        concrete Abstract{}      = error "Need concrete address at this stage."
+        concrete (Concrete addr) = addr
 
 -- | Gets a synthesizer program from a native program. Currently does
 -- not support jumps.
 fromNative :: NativeProgram -> Program
 fromNative = fixNumbers . concatMap extract
   where extract (Instrs a b c d)   = [Opcode a, Opcode b, Opcode c, Opcode d]
-        extract (Jump3 a b c addr) = [Opcode a, Opcode b, Jump c addr]
-        extract (Jump2 a b addr)   = [Opcode a, Jump b addr]
-        extract (Jump1 a addr)     = [Jump a addr]
+        extract (Jump3 a b c addr) = [Opcode a, Opcode b, Jump c $ Concrete addr]
+        extract (Jump2 a b addr)   = [Opcode a, Jump b $ Concrete addr]
+        extract (Jump1 a addr)     = [Jump a $ Concrete addr]
         extract (Constant n)       = [Number n]
         fixNumbers [] = []
         fixNumbers (Opcode FetchP : rest) = case find isNumber rest of
