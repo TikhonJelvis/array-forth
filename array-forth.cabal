@@ -10,7 +10,7 @@ name:                array-forth
 -- PVP summary:      +-+------- breaking API changes
 --                   | | +----- non-breaking API additions
 --                   | | | +--- code changes with no API change
-version:             0.2.0.2
+version:             0.2.0.3
 
 -- A short (one-line) description of the package.
 synopsis:            A simple interpreter for arrayForth, the language used on GreenArrays chips.
@@ -66,17 +66,17 @@ library
   -- other-modules:       
   
   -- Other library packages from which modules are imported.
-  build-depends:       base ==4.5.*, mcmc-synthesis >=0.1, MonadRandom ==0.1.*,
+  build-depends:       base >3 && <=5, mcmc-synthesis >=0.1, MonadRandom ==0.1.*,
                        OddWord >=1.0.0, split ==0.1.*, vector ==0.9.*
   GHC-options:         -Wall -funbox-strict-fields -fno-warn-orphans -rtsopts
 
 executable mcmc-demo
   Main-is:             src/Main.hs
-  build-depends:       base ==4.5.*, mcmc-synthesis >=0.1, array-forth,
-                       MonadRandom ==0.1.*
+  build-depends:       base >3 && <=5, mcmc-synthesis >=0.1, array-forth,
+                       MonadRandom ==0.1.*, optparse-applicative ==0.5.*
   GHC-options:         -Wall -rtsopts
 
 executable array-forth
   Main-is:             src/Run.hs
-  build-depends:       base ==4.5.*, vector ==0.9.*, split ==0.1.*, array-forth
+  build-depends:       base >3 && <=5, vector ==0.9.*, split ==0.1.*, array-forth
   GHC-options:         -Wall -rtsopts
