@@ -54,7 +54,7 @@ test distance p₁ p₂ input = let r₁ = eval $ load (read p₁) input
 
 inclusiveOr :: Problem Program
 inclusiveOr = Problem { score = evaluate program cases distance
-                      , prior = Distr.replicate 8 defaultOps
+                      , prior = Distr.constant program
                       , jump  = defaultMutations }
   where program = read "over over or a! and a or"
         cases = [startState {t = 0, s = 123}, startState {t = maxBound, s = 123},
