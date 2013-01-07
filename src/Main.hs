@@ -1,13 +1,17 @@
+{-# LANGUAGE NamedFieldPuns    #-}
+{-# LANGUAGE OverloadedStrings #-}
 module Main where
 
 import           Control.Monad.Random            (evalRandIO)
 
 import           Data.List                       (find)
 
+import           Options.Applicative
+
 import           Language.ArrayForth.Distance    (Distance, registers)
 import           Language.ArrayForth.Interpreter (eval)
 import           Language.ArrayForth.Parse       ()
-import           Language.ArrayForth.Program     (Program, load)
+import           Language.ArrayForth.Program     (Program, load, readProgram)
 import           Language.ArrayForth.State       (State (..), startState)
 import           Language.ArrayForth.Synthesis   (defaultMutations, defaultOps,
                                                   evaluate)
@@ -16,15 +20,29 @@ import qualified Language.Synthesis.Distribution as Distr
 import           Language.Synthesis.Synthesis    (Problem (..), runningBest,
                                                   synthesizeMhList)
 
+data Options = Options { verbose :: Bool }
+
+options :: Parser Options
+options =  Options <$> switch (long "verbose" <>
+                               short 'v' <>
+                               help "Print intermediate state to STDOUT.")
+
+specP :: Parser Program
+specP = argument (either (const Nothing) Just . readProgram) (metavar "SPEC")
+
 main :: IO ()
-main = verbose
+main = do Options { verbose } <- execParser go
+          if verbose then verbosely else run
+  where go = info (helper <*> options) (fullDesc <>
+                                        progDesc "Synthesize arrayForth programs using MCMC." <>
+                                        header "mcmc-demo - simple synthesis with MCMC")
 
 good :: (Program, Double) -> Bool
 good (_, val) = val >= 0.5
 
-verbose :: IO ()
-verbose = do ls <- evalRandIO (synthesizeMhList inclusiveOr)
-             mapM_ print . zip ls . takeWhile (not . good) $ runningBest ls
+verbosely :: IO ()
+verbosely = do ls <- evalRandIO (synthesizeMhList inclusiveOr)
+               mapM_ print . zip ls . takeWhile (not . good) $ runningBest ls
 
 run :: IO ()
 run = evalRandIO (synthesizeMhList inclusiveOr) >>= print . find good . runningBest
