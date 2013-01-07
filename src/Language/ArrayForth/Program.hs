@@ -73,16 +73,17 @@ instance IsString Program where fromString = read
 -- nops before + instructions.
 toNative :: Program -> NativeProgram
 toNative = (>>= toInstrs) . splitWords bound . fixSlot3 . (>>= nopsPlus) . labels . filter (/= Unused)
-  where labels program = map convert $ filter (not . label) program
+  where labels program = map fixLabel $ filter (not . label) program
           where label Label{} = True
                 label _       = False
                 values = go 0 program
                 go _ []                  = []
                 go n (Label name : rest) = (name, n) : go n rest
                 go n (_ : rest)          = go (n + 1) rest
-                convert (Jump op (Abstract l)) = maybe (error $ "Unknown label " ++ l)
-                                                 (Jump op . Concrete) $ lookup l values
-                convert x                      = x
+                fixLabel (Jump op (Abstract l)) =
+                  maybe (error $ "Unknown label " ++ l)
+                        (Jump op . Concrete) $ lookup l values
+                fixLabel x                      = x
         nop = Opcode Nop
         bound Jump{} = True
         bound _      = False
