@@ -51,7 +51,7 @@ instance Random F18Word where
 defaultOps :: Distr Instruction
 defaultOps = mix [(constants, 1.0), (uniform [Unused], 1.0),
                   (uniform instrs, genericLength instrs)]
-  where instrs = map Opcode $ filter (not . isJump) opcodes \\ [Unext, Exec, Ret]
+  where instrs = map Opcode $ filter (not . isJump) opcodes \\ [Unext, Nop]
         constants = let Distr {sample, logProbability} = randInt (0, maxBound)
                         logProb (Number n) = logProbability n
                         logProb _          = negativeInfinity in

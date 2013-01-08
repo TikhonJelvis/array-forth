@@ -73,6 +73,11 @@ set mem index value = mem // [(toMem index, fromIntegral $ value)]
 -- | Loads the given program into memory at the given starting
 -- position.
 setProgram :: F18Word -> NativeProgram -> State -> State
-setProgram start program state@State {memory} = state' {i = toBits $ next state'}
-  where state' = state {memory = memory // prog}
-        prog = zip [toMem start..] (fromIntegral . toBits <$> program)
+setProgram start program state = state' { i = toBits $ next state' }
+  where state' = loadMemory start (fromIntegral . toBits <$> program) state
+
+-- | Load the given memory words into the state starting at the given
+-- address.
+loadMemory :: F18Word -> [F18Word] -> State -> State
+loadMemory start values state@State {memory} =
+  state { memory = memory // zip [toMem start..] (fromIntegral <$> values) }

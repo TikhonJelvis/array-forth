@@ -12,6 +12,7 @@ import           Language.ArrayForth.Distance    (Distance, registers)
 import           Language.ArrayForth.Interpreter (eval)
 import           Language.ArrayForth.Parse       ()
 import           Language.ArrayForth.Program     (Program, load, readProgram)
+import qualified Language.ArrayForth.Stack       as S
 import           Language.ArrayForth.State       (State (..), startState)
 import           Language.ArrayForth.Synthesis   (defaultMutations, defaultOps,
                                                   evaluate)
@@ -41,11 +42,11 @@ good :: (Program, Double) -> Bool
 good (_, val) = val >= 0.5
 
 verbosely :: IO ()
-verbosely = do ls <- evalRandIO (synthesizeMhList inclusiveOr)
+verbosely = do ls <- evalRandIO (synthesizeMhList bitwiseSwap)
                mapM_ print . zip ls . takeWhile (not . good) $ runningBest ls
 
 run :: IO ()
-run = evalRandIO (synthesizeMhList inclusiveOr) >>= print . find good . runningBest
+run = evalRandIO (synthesizeMhList bitwiseSwap) >>= print . find good . runningBest
 
 test :: Distance -> String -> String -> State -> Double
 test distance p₁ p₂ input = let r₁ = eval $ load (read p₁) input
@@ -56,7 +57,20 @@ inclusiveOr :: Problem Program
 inclusiveOr = Problem { score = evaluate program cases distance
                       , prior = Distr.constant program
                       , jump  = defaultMutations }
-  where program = read "over over or a! and a or"
+  where program = "over over or a! and a or"
         cases = [startState {t = 0, s = 123}, startState {t = maxBound, s = 123},
                  startState {t = 1, s = 123}, startState {t = maxBound - 1, s = 123}]
         distance = registers [t]
+
+bitwiseSwap :: Problem Program
+bitwiseSwap = Problem { score = evaluate program cases distance
+                      , prior = Distr.constant program
+                      , jump = defaultMutations }
+  where program = "a! over over . a - and . push a and . pop over over . or push and . pop or . ."
+        cases = [ startState {t = 46, s = 18, dataStack = st 43}
+                , startState {t = 232, s = 123, dataStack = st 0}
+                , startState {t = 2352, s = 123, dataStack = st 1}
+                , startState {t = maxBound - 5, s = 123, dataStack = st 13}
+                ]
+        distance = registers [t]
+        st = S.push S.empty
