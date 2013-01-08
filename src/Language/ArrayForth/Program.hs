@@ -1,5 +1,6 @@
 {-# LANGUAGE FlexibleInstances    #-}
 {-# LANGUAGE OverlappingInstances #-}
+{-# LANGUAGE OverloadedStrings    #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 module Language.ArrayForth.Program where
 
@@ -72,30 +73,10 @@ instance IsString Program where fromString = read
 -- instructions going into the last slot as well as prepending
 -- nops before + instructions.
 toNative :: Program -> NativeProgram
-toNative = (>>= toInstrs) . splitWords bound . fixSlot3 . (>>= nopsPlus) . labels . filter (/= Unused)
-  where labels program = map fixLabel $ filter (not . label) program
-          where label Label{} = True
-                label _       = False
-                values = go 0 program
-                go _ []                  = []
-                go n (Label name : rest) = (name, n) : go n rest
-                go n (_ : rest)          = go (n + 1) rest
-                fixLabel (Jump op (Abstract l)) =
-                  maybe (error $ "Unknown label " ++ l)
-                        (Jump op . Concrete) $ lookup l values
-                fixLabel x                      = x
-        nop = Opcode Nop
-        bound Jump{} = True
-        bound _      = False
-        nopsPlus (Opcode Plus) = [nop, Opcode Plus]
+toNative = (>>= toInstrs) . splitWords boundary . fixSlot3 .
+           (>>= nopsPlus) . labels 0 . filter (/= Unused)
+  where nopsPlus (Opcode Plus) = ". +"
         nopsPlus x             = [x]
-        fixSlot3 program
-          | length program < 4 = program
-          | validOp4           = take 4 program ++ fixSlot3 (drop 4 program)
-          | otherwise          = take 3 program ++ [nop] ++ fixSlot3 (drop 3 program)
-          where validOp4 = case program !! 3 of Opcode op -> slot3 op
-                                                Number{}  -> True
-                                                _         -> False
         toInstrs ls = let (ops, numbers) = addFetchP ls in
           convert ops : map (\ (Number n) -> Constant n) numbers
         addFetchP [] = ([], [])
@@ -107,9 +88,42 @@ toNative = (>>= toInstrs) . splitWords bound . fixSlot3 . (>>= nopsPlus) . label
         convert [Opcode a, Opcode b, Jump c addr]        = Jump3 a b c $ concrete addr
         convert [Opcode a, Jump b addr]                  = Jump2 a b $ concrete addr
         convert [Jump a addr]                            = Jump1 a $ concrete addr
-        convert instrs                                   = convert . take 4 $ instrs ++ repeat nop
+        convert instrs                                   = convert . take 4 $ instrs ++ repeat (Opcode Nop)
         concrete Abstract{}      = error "Need concrete address at this stage."
         concrete (Concrete addr) = addr
+
+-- | Does this instruction force a word boundary?
+boundary :: Instruction -> Bool
+boundary Jump{} = True
+boundary _      = False
+
+-- | Resolves labels into addresses, assuming the program starts at
+-- the given memory location.
+labels :: F18Word -> Program -> Program
+labels start program = map fixLabel $ filter (not . label) program
+  where label Label{} = True
+        label _       = False
+        values = go start program
+        go _ []                  = []
+        go n (Label name : rest) = (name, n) : go n rest
+        go n (_ : rest)          = go (n + 1) rest
+        fixLabel (Jump op (Abstract l)) =
+          maybe (error $ "Unknown label " ++ l)
+                (Jump op . Concrete) $ lookup l values
+        fixLabel x                      = x
+
+-- | Insert extra nops to account for instructions that cannot go into
+-- the last slot.
+fixSlot3 :: Program -> Program
+fixSlot3 program = case splitWords boundary program of
+  []          -> []
+  (next:rest) -> take 4 (go next) ++ fixSlot3 (drop 4 (go next) ++ concat rest)
+  where go instrs@[_, _, _, op3] | valid op3 = instrs
+                                 | otherwise = init instrs ++ "." ++ [op3]
+        go instrs = instrs
+        valid (Opcode op) = slot3 op
+        valid Number{}    = True
+        valid _           = False
 
 -- | Gets a synthesizer program from a native program. Currently does
 -- not support jumps.

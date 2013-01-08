@@ -90,7 +90,7 @@ isValid (Jump1 a addr)     = isJump a
 isValid Constant{}         = True
 
 -- For now, we do not really support jumps in the Program type.
-prop_validNative = forAll straightlineProgram $ \ p -> all isValid $ toNative p
+prop_validNative = all isValid . toNative
 
 case_runningTime = do let time = runningTime . read
                       11.0 @=? time ". . . . @p . . . 10"
