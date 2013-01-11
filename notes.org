@@ -1,0 +1,34 @@
+* Evaluation Function
+  - gets stuck around bad scores: ≈ -13—-10
+    - worst score would be ≈-18 
+  - try finding better function from existing benchmarks
+    - some sort of (non?)linear regression?
+  - let programmer specify it somehow?
+  - do more random cases help smooth out the evaluation function?
+  - have some way of evaluating the evaluation function (very meta)
+    - a graph would probably help
+* Prior Distribution
+  - how can we come up with a better distribution of mutations?
+    - look at existing code
+      - find common patterns
+      - build up model of code: something like a Markov chain?
+* Test Cases
+  - randomly generate initial cases
+    - fix things like unspecified parts of the stack
+  - use something like CEGIS
+    - would need a rebuilt verifier—maybe with sbv (I hope)?
+* Numbers
+  - relatively good at generating programs, especially with certain
+    constraints (large memory usage, high bit precision,
+    self-modifying, branching, looping...)
+  - relatively *bad* at finding good numeric constants
+    - could be helped by better distribution over constants: I
+      currently just have a uniform distribution, which is indubitably
+      horrible. 
+    - however: perhaps it is better to use an intelligent solver for
+      just this? That is: MCMC generates a program with a constant,
+      but without specifying the *value* of the constant; when running
+      the test, we could use a different solver to find a good value
+      for the constant (if possible)
+      - perhaps this is too slow? maybe a very specific solver/search
+        algorithm would help here?
