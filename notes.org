@@ -1,12 +1,33 @@
 * Evaluation Function
+** Problem
   - gets stuck around bad scores: ≈ -13—-10
     - worst score would be ≈-18 
+    - really bad scores might correspond to *good* programs!
+  - does not reflect program semantics well
+    - most close programs *do not* differ by a small number of bits
+    - is actively counter-productive for things like bitwise not
+    - can find relatively odd almost-correct programs
+** Benchmarks
   - try finding better function from existing benchmarks
     - some sort of (non?)linear regression?
   - let programmer specify it somehow?
   - do more random cases help smooth out the evaluation function?
   - have some way of evaluating the evaluation function (very meta)
     - a graph would probably help
+** Uniqueness
+  - come up with a bunch of metrics and then look for ones that stand
+    out rather than having a preconceived notion of "goodness"
+    - this really needs fleshing out and I haven't explained it very well
+** Random Thoughts
+  - philosophy: the distance function depends more on the programs
+    than their outputs
+    - rather than trying to see how close two outputs are, in some
+      sense (like popCount or arithmetic), estimate how far a program
+      to generate them would be
+    - maybe mix popCount and so on with one or two layers of
+      transformations based on instructions? That is: take the answer
+      and apply a bunch of random operations to it like bitwise
+      negation and shifting, and average the popCount metric over those
 * Prior Distribution
   - how can we come up with a better distribution of mutations?
     - look at existing code
@@ -17,6 +38,7 @@
     - fix things like unspecified parts of the stack
   - use something like CEGIS
     - would need a rebuilt verifier—maybe with sbv (I hope)?
+    - write my own SKETCH frontend, based on sbv?
 * Numbers
   - relatively good at generating programs, especially with certain
     constraints (large memory usage, high bit precision,
