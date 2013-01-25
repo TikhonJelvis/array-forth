@@ -22,12 +22,24 @@ import           Language.Synthesis.Distribution (Distr (..), mix,
                                                   uniform)
 import           Language.Synthesis.Mutations    hiding (mix)
 import qualified Language.Synthesis.Mutations    as M
+import           Language.Synthesis.Synthesis    (Score (..))
+
+import           Text.Printf
+
+-- | A score type that contains a correctness value and a performance
+-- value.
+data DefaultScore = DefaultScore Double Double deriving (Ord, Eq)
+
+instance Score DefaultScore where
+  toScore (DefaultScore correctness performance) = correctness + 0.1 * performance
+
+instance Show DefaultScore where show (DefaultScore a b) = printf "<%.2f, %.2f>" a b
 
 -- | Given a specification program and some inputs, evaluate a program
 -- against the specification for both performance and correctness.
-evaluate :: Program -> [State] -> Distance -> Program -> Double
+evaluate :: Program -> [State] -> Distance -> Program -> DefaultScore
 evaluate spec inputs score program =
-  0.1 * (10 * sum correctness + sum performance / genericLength inputs)
+  DefaultScore (sum correctness) (sum performance / genericLength inputs)
   where specs = stepProgram . load spec <$> inputs
         progs = stepProgram . load program <$> inputs
         cases = zip3 (last <$> specs) (length <$> specs) (countTime <$> specs)

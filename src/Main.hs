@@ -14,11 +14,11 @@ import           Language.ArrayForth.Parse       ()
 import           Language.ArrayForth.Program     (Program, load, readProgram)
 import qualified Language.ArrayForth.Stack       as S
 import           Language.ArrayForth.State       (State (..), startState)
-import           Language.ArrayForth.Synthesis   (defaultMutations, defaultOps,
+import           Language.ArrayForth.Synthesis   (DefaultScore, defaultMutations, defaultOps,
                                                   evaluate)
 
 import qualified Language.Synthesis.Distribution as Distr
-import           Language.Synthesis.Synthesis    (Problem (..), runningBest,
+import           Language.Synthesis.Synthesis    (Problem (..), Score (..), runningBest,
                                                   synthesizeMhList)
 
 data Options = Options { verbose :: Bool }
@@ -38,8 +38,8 @@ main = do Options { verbose } <- execParser go
                                         progDesc "Synthesize arrayForth programs using MCMC." <>
                                         header "mcmc-demo - simple synthesis with MCMC")
 
-good :: (Program, Double) -> Bool
-good (_, val) = val >= 0.5
+good :: Score s => (Program, s) -> Bool
+good (_, val) = toScore val >= 0.5
 
 verbosely :: IO ()
 verbosely = do ls <- evalRandIO (synthesizeMhList bitwiseSwap)
@@ -53,7 +53,7 @@ test distance p₁ p₂ input = let r₁ = eval $ load (read p₁) input
                                 r₂ = eval $ load (read p₂) input in
                             distance r₁ r₂
 
-inclusiveOr :: Problem Program
+inclusiveOr :: Problem Program DefaultScore
 inclusiveOr = Problem { score = evaluate program cases distance
                       , prior = Distr.constant program
                       , jump  = defaultMutations }
@@ -62,7 +62,7 @@ inclusiveOr = Problem { score = evaluate program cases distance
                  startState {t = 1, s = 123}, startState {t = maxBound - 1, s = 123}]
         distance = registers [t]
 
-bitwiseSwap :: Problem Program
+bitwiseSwap :: Problem Program DefaultScore
 bitwiseSwap = Problem { score = evaluate program cases distance
                       , prior = Distr.constant program
                       , jump = defaultMutations }

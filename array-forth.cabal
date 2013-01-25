@@ -10,7 +10,7 @@ name:                array-forth
 -- PVP summary:      +-+------- breaking API changes
 --                   | | +----- non-breaking API additions
 --                   | | | +--- code changes with no API change
-version:             0.2.0.5
+version:             0.2.0.6
 
 -- A short (one-line) description of the package.
 synopsis:            A simple interpreter for arrayForth, the language used on GreenArrays chips.
@@ -78,7 +78,7 @@ executable mcmc-demo
 
 executable array-forth
   Main-is:             src/Run.hs
-  build-depends:       base >3 && <=5, vector ==0.9.*, split ==0.1.*, array-forth
+  build-depends:       base >3 && <=5, vector ==0.9.*, split ==0.1.*, array-forth, reactive-banana ==0.6.*
   GHC-options:         -Wall -rtsopts
 
 test-suite test-array-forth
