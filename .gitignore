@@ -5,3 +5,5 @@
 \#*\#
 dist
 cabal-dev
+*.tex
+*.log
