@@ -10,15 +10,24 @@
 ** Benchmarks
   - try finding better function from existing benchmarks
     - some sort of (non?)linear regression?
+    - I don't think this would solve the fundamental issues
   - let programmer specify it somehow?
   - do more random cases help smooth out the evaluation function?
+    - fails to address the fundamental issue
+    - more cases would only be good for catching weird edge cases
   - have some way of evaluating the evaluation function (very meta)
     - a graph would probably help
+    - surprise: turns out they're uniformly horrible
 ** Uniqueness
   - come up with a bunch of metrics and then look for ones that stand
     out rather than having a preconceived notion of "goodness"
     - this really needs fleshing out and I haven't explained it very well
 ** Random Thoughts
+  - look at program traces instead of results
+    - trace inherently carry more information
+    - especially for Forth, the results are far too volatile
+    - maybe look at Δtraces—something like how states change rather than
+      the states themselve
   - philosophy: the distance function depends more on the programs
     than their outputs
     - rather than trying to see how close two outputs are, in some
@@ -33,6 +42,11 @@
     - look at existing code
       - find common patterns
       - build up model of code: something like a Markov chain?
+      - there simply isn't enough existing code to make this
+        worthwhile
+  - immediate problem: multi-instruction sequences
+    - having a noop like b! !b in the candidate stalls the search
+    - should be easy to fix by tweaking the jump distribution
 * Test Cases
   - randomly generate initial cases
     - fix things like unspecified parts of the stack
