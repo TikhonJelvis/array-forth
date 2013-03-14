@@ -1,0 +1,10 @@
+* Useful F18A-specific mutations:
+  - opposites: push, pop...
+  - "uninitialized" values
+  - problem-specific "meaningful" instructions
+  - too much control flow
+  - common patterns
+  - "uninitialized" stack?
+  - self-modification?
+  - disallow jump outside of code?
+    - disallow all jumps?
