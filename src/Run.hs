@@ -28,7 +28,7 @@ repl = go 0 startState
   where go loc state =
           do inp <- putStr "λ>" >> hFlush stdout >> getLine
              case inp of
-               [':']          -> putStrLn "Please specify a command!" >> go loc state
+               ":"            -> putStrLn "Please specify a command!" >> go loc state
                ':' : commands -> let command : args = words commands in
                  run command args >>= uncurry go
                program        -> execute $ readProgram program
