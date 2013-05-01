@@ -81,6 +81,12 @@ executable array-forth
   build-depends:       base >3 && <=5, vector ==0.9.*, split ==0.1.*, array-forth
   GHC-options:         -Wall -rtsopts
 
+executable chart
+  Main-is:             src/Chart.hs
+  build-depends:       base >3 && <=5, mcmc-synthesis >=0.1, array-forth, Chart >=0.16,
+                       MonadRandom ==0.1.*, optparse-applicative ==0.5.*
+  GHC-options:         -Wall -rtsopts -O2
+
 test-suite test-array-forth
   Type:                exitcode-stdio-1.0
   Main-is:             test/Language/ArrayForth/Test.hs
