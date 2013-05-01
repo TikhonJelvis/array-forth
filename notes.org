@@ -36,7 +36,10 @@
     - maybe mix popCount and so on with one or two layers of
       transformations based on instructions? That is: take the answer
       and apply a bunch of random operations to it like bitwise
-      negation and shifting, and average the popCount metric over those
+      negation and shifting, and average the popCount metric over
+      those
+   - hedge: try to account for weird shapes in the evaluation function
+     rather than assuming any particular pattern ahead of time.
 * Prior Distribution
   - how can we come up with a better distribution of mutations?
     - look at existing code
