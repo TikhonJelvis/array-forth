@@ -63,7 +63,8 @@ orSpec = "over over or a! and a or"
 
 cases :: [State]
 cases = [startState {t = 0, s = 123}, startState {t = maxBound, s = 123},
-         startState {t = 1, s = 123}, startState {t = maxBound - 1, s = 123}]
+         startState {t = 1, s = 123}, startState {t = maxBound - 1, s = 123},
+         startState {t = 37, s = 123}, startState {t = 52, s = 123}]
 
 inclusiveOr :: Problem Program DefaultScore
 inclusiveOr = Problem { score = evaluate orSpec cases distance
