@@ -1,6 +1,7 @@
 {-# LANGUAGE FlexibleInstances    #-}
 {-# LANGUAGE NamedFieldPuns       #-}
 {-# LANGUAGE OverlappingInstances #-}
+{-# LANGUAGE RecordWildCards      #-}
 {-# LANGUAGE ScopedTypeVariables  #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 module Language.ArrayForth.Synthesis where
@@ -60,9 +61,13 @@ withPerformance score spec result = DefaultScore (toScore $ score spec res) perf
           Left  res -> countTime spec - countTime res - 1e10
 
 -- | Given a specification program and some inputs, evaluate a program
--- against the specification for both performance and correctness.
+-- against the specification for both performance and
+-- correctness. Normalize the score based on the number of test cases.
 evaluate :: Program -> [State] -> (State -> State -> Distance) -> Program -> DefaultScore
-evaluate spec inputs distance = trace spec inputs $ withPerformance (distance `on` last)
+evaluate spec inputs distance =
+  normalize . trace spec inputs (withPerformance (distance `on` last))
+  where normalize (DefaultScore c p) = DefaultScore (c / len) (p / len)
+        len = genericLength inputs
 
 -- I need this so that I can get a distribution over Forth words.
 instance Random F18Word where
@@ -79,7 +84,7 @@ defaultOps :: Distr Instruction
 defaultOps = mix [(constants, 1.0), (uniform [Unused], 1.0),
                   (uniform instrs, genericLength instrs)]
   where instrs = map Opcode $ filter (not . isJump) opcodes \\ [Unext, Nop]
-        constants = let Distr {sample, logProbability} = randInt (0, maxBound)
+        constants = let Distr {..} = randInt (0, maxBound)
                         logProb (Number n) = logProbability n
                         logProb _          = negativeInfinity in
                     Distr { sample = Number <$> sample
@@ -104,4 +109,3 @@ removePairs instrDistr program =
 -- probability.
 defaultMutations :: Mutation Program
 defaultMutations = M.mix [(mutateInstruction defaultOps, 1), (swapInstructions, 1)]
-
