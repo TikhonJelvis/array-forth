@@ -77,10 +77,10 @@ countTime = runningTime . map (fromBits . i)
 -- | Checks that the program trace terminated in at most n steps,
 -- returning Nothing otherwise.
 throttle :: Int -> Trace -> Either Trace Trace
-throttle n state | null res       = Right [startState]
-                 | length res == n = Left res
-                 | otherwise      = Right res
-  where res = take n state
+throttle n states | null res       = Right [startState]
+                  | length res == n = Left res
+                  | otherwise      = Right res
+  where res = take n states
 
 -- | Does the given opcode cause the current word to stop executing?
 endWord :: Opcode -> Bool
@@ -114,7 +114,7 @@ execute op state@State {a, b, p, r, s, t, memory} = case op of
   Or           -> state' {t = s `xor` t}
   Drop         -> fst $ dpop state
   Dup          -> dpush state t
-  Pop          -> let (s', res) = rpop state in dpush s' res
+  Pop          -> uncurry dpush $ rpop state
   Over         -> dpush state s
   ReadA        -> dpush state a
   Nop          -> state
