@@ -10,7 +10,7 @@ name:                array-forth
 -- PVP summary:      +-+------- breaking API changes
 --                   | | +----- non-breaking API additions
 --                   | | | +--- code changes with no API change
-version:             0.2.0.6
+version:             0.2.1.0
 
 -- A short (one-line) description of the package.
 synopsis:            A simple interpreter for arrayForth, the language used on GreenArrays chips.
@@ -51,7 +51,8 @@ source-repository head
 
 library
   -- Modules exported by the library.
-  exposed-modules:     Language.ArrayForth.Distance, 
+  exposed-modules:     Language.ArrayForth.Cores
+                       Language.ArrayForth.Distance, 
                        Language.ArrayForth.Interpreter,
                        Language.ArrayForth.NativeProgram,
                        Language.ArrayForth.Opcode,
@@ -66,8 +67,8 @@ library
   -- other-modules:       
   
   -- Other library packages from which modules are imported.
-  build-depends:       base >3 && <=5, mcmc-synthesis >=0.1, MonadRandom ==0.1.*,
-                       OddWord >=1.0.0, split ==0.1.*, vector ==0.9.*
+  build-depends:       base >3 && <=5, array >=0.4, mcmc-synthesis >=0.1, modular-arithmetic ==1.*,
+                       MonadRandom ==0.1.*, OddWord >=1.0.0, split ==0.1.*, vector ==0.9.*
   GHC-options:         -Wall -funbox-strict-fields -fno-warn-orphans -rtsopts
 
 executable mcmc-demo
