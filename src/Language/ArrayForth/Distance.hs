@@ -3,6 +3,7 @@ module Language.ArrayForth.Distance where
 
 import           Data.Bits                       (Bits, popCount, xor)
 import           Data.List                       (genericLength)
+import           Data.Maybe                      (fromJust)
 import           Data.Monoid                
 
 import           Language.ArrayForth.Interpreter (Trace)
@@ -29,7 +30,7 @@ registers regs s₁ s₂ = Sum . fromIntegral . sum $ zipWith countBits (go s₁
 -- between the given memory locations.
 locations :: [F18Word] -> (State -> State -> Distance)
 locations addresses s₁ s₂ = Sum . fromIntegral . sum $ zipWith countBits (go s₁) (go s₂)
-  where go state = map (memory state !) addresses
+  where go state = map (fromJust . (memory state !)) addresses
 
 -- | Returns a score that counts the number of matching states
 -- according to some projection function.
