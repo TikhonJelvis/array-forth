@@ -4,7 +4,7 @@
 {-# LANGUAGE TypeOperators       #-}
 -- | This module defines a type representing the location of a core in
 -- the 8 × 18 grid.
---
+-- 
 -- All of the actually interesting code is in the typeclass instances.
 module Language.ArrayForth.Core where
 
@@ -16,6 +16,15 @@ import           Text.Printf  (printf)
 -- | The address of a core. There are 144 cores in an 8 × 18
 -- array. The address has the row number followed by the column
 -- number.
+-- 
+-- As a string, the core addresses are displayed as a single
+-- three-digit number, just like in the GreenArray documentation. So
+-- @Core 7 17@ becomes @\"717\"@.
+-- 
+-- Core addresses behave like numbers: you can use numeric literals
+-- and add them together. For example, @[0..] :: [Core]@ gets you the
+-- list of all the core addresses. @(move core = core + Core 1 1)@ is
+-- a function that moves you up and over by one core.
 data Core = Core !(ℤ/8) !(ℤ/18)
 
 -- Follows the same format as the documentation does: (7, 17) becomes 717.
@@ -30,6 +39,7 @@ instance Enum Core where
     | n >= 0 && n < 144 = Core (toMod' $ n `div` 18) (toMod' $ n `mod` 18)
     | otherwise       = error "Core index out of bounds."
 
+  -- Taken directly from the documentation for Enum:
   enumFrom     x   = enumFromTo     x maxBound
   enumFromThen x y = enumFromThenTo x y bound
     where bound | fromEnum y >= fromEnum x = maxBound
