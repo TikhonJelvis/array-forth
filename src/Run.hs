@@ -7,9 +7,9 @@ import qualified Data.Vector.Unboxed             as V
 
 import           Language.ArrayForth.Interpreter (eval, runNativeProgram)
 import           Language.ArrayForth.Parse       (isNumber)
-import           Language.ArrayForth.Program     (toNative, readProgram)
-import           Language.ArrayForth.State       (State (..), setProgram,
-                                                  startState)
+import           Language.ArrayForth.Program     (readProgram, toNative)
+import           Language.ArrayForth.State       (Memory (..), State (..),
+                                                  setProgram, startState)
 
 import           System.Environment              (getArgs)
 import           System.IO                       (hFlush, stdout)
@@ -42,5 +42,5 @@ repl = go 0 startState
                   | otherwise = let n = read $ head args in
                     (n, state { p = n }) <$ print state { p = n }
                 run cmd args  = (loc, state) <$ continue cmd args
-                continue "memory" _ = mapM_ print . chunk 8 . V.toList $ memory state
+                continue "memory" _ = mapM_ print . chunk 8 . V.toList . ram $ memory state
                 continue cmd _      = printf "Unknown command `%s'!\n" cmd

@@ -52,6 +52,7 @@ source-repository head
 library
   -- Modules exported by the library.
   exposed-modules:     Language.ArrayForth.Core
+                       Language.ArrayForth.Channel
                        Language.ArrayForth.Distance, 
                        Language.ArrayForth.Interpreter,
                        Language.ArrayForth.NativeProgram,
@@ -68,8 +69,7 @@ library
   
   -- Other library packages from which modules are imported.
   build-depends:       base >3 && <=5, 
-                       array >=0.4, 
-                       lazyarray >=0.1,
+                       array >=0.4,
                        mcmc-synthesis >=0.1, 
                        modular-arithmetic ==1.*,
                        MonadRandom ==0.1.*, 
@@ -93,18 +93,17 @@ executable mcmc-demo
 executable array-forth
   Main-is:             src/Run.hs
 
-  build-depends:       array-forth
+  build-depends:       array-forth,
                        base >3 && <=5,
                        split ==0.1.*,
-                       vector ==0.9.*,
-
+                       vector ==0.9.*
 
   GHC-options:         -Wall -rtsopts
 
 executable chart
   Main-is:             src/Chart.hs
 
-  build-depends:       array-forth,                       
+  build-depends:       array-forth,
                        base >3 && <=5,
                        Chart >=0.16,
                        mcmc-synthesis >=0.1,
@@ -117,11 +116,11 @@ test-suite test-array-forth
   Type:                exitcode-stdio-1.0
   Main-is:             test/Language/ArrayForth/Test.hs
 
-  build-depends:       array-forth                       
+  build-depends:       array-forth,
                        base >3 && <=5,
                        HUnit >= 1 && < 2,
                        QuickCheck >= 2 && <3,
                        test-framework-hunit ==0.*,
                        test-framework-quickcheck2 ==0.*,
-                       test-framework-th ==0.*,
+                       test-framework-th ==0.*
 
