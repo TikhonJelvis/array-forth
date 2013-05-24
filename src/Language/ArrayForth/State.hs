@@ -135,6 +135,11 @@ set state@State {memory = memory@Memory {..}} i value
   where updatedRam = memory { ram = ram // [(toMem i, fromIntegral value)] }
         updatedOutput = memory { output = writePort i value }
 
+-- | Is the state is blocked because it has written to a port? Note
+-- that this does *not* consider being blocked on a read!
+blocked :: State -> Bool
+blocked State { memory = Memory { output } } = output /= emptyChannel
+
 -- | Loads the given program into memory at the given starting
 -- position.
 setProgram :: F18Word -> NativeProgram -> State -> State
