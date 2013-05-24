@@ -22,6 +22,9 @@ import           Language.ArrayForth.Opcode (F18Word)
 -- execution will block.
 data Channel = Channel { right, down, left, up :: Maybe F18Word } deriving (Show, Eq)
 
+-- | The four possible port directions. 
+data Port = R | D | L | U deriving (Show, Eq, Bounded, Enum)
+
 -- The monoid instance is based around *replacement*.
 instance Monoid Channel where
   mempty = emptyChannel

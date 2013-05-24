@@ -1,4 +1,5 @@
 {-# LANGUAGE DataKinds           #-}
+{-# LANGUAGE MonadComprehensions #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE StandaloneDeriving  #-}
 {-# LANGUAGE TypeOperators       #-}
@@ -10,7 +11,7 @@ module Language.ArrayForth.Core where
 
 import           Data.Modular 
 
-import           Text.Printf  (printf)
+import           Text.Printf         (printf)
 
 -- | The address of a core. There are 144 cores in an 8 × 18
 -- array. The address has the row number followed by the column
@@ -25,6 +26,18 @@ import           Text.Printf  (printf)
 -- list of all the core addresses. @(move core = core + Core 1 1)@ is
 -- a function that moves you up and over by one core.
 data Core = Core !(ℤ/8) !(ℤ/18)
+
+-- | Returns all the neighbors of a core. Most cores have four
+-- neighbors; the ones along the edges only have three and the ones at
+-- the corners two.
+--
+-- They always come in the order right, down, left up, with Nothing in
+-- place of non-existant cores.
+neighbors :: Core -> [Maybe Core]
+neighbors core@(Core row col) = [ [ core + Core 1 0     | row /= maxBound ] 
+                                , [ core + Core 0 1     | col /= maxBound ] 
+                                , [ core + Core (-1) 0  | row /= minBound ] 
+                                , [ core + Core 0 (- 1) | col /= minBound ] ]
 
 -- Follows the same format as the documentation does: (7, 17) becomes 717.
 instance Show Core where show (Core row col) = printf "%d%.2d" (unMod row) (unMod col)

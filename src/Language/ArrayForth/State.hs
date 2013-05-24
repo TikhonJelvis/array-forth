@@ -152,3 +152,15 @@ loadMemory :: F18Word -> [F18Word] -> State -> State
 loadMemory start values state@State {memory = memory@Memory {..}} =
   state { memory = memory {
              ram = ram // zip [toMem start..] (fromIntegral <$> values) } }
+
+-- This code in particular would probably have been much nicer with lenses! 
+-- | Sets the input value at the given port.
+sendInput :: Port -> F18Word -> State -> State
+sendInput port value state@(State { memory = memory@Memory {..} }) = updated
+  where updated = state {
+          memory = case port of
+             R -> memory { input = input { right = Just value } }
+             D -> memory { input = input { down  = Just value } }
+             L -> memory { input = input { left  = Just value } }
+             U -> memory { input = input { up    = Just value } }
+          }
