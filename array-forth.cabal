@@ -10,7 +10,7 @@ name:                array-forth
 -- PVP summary:      +-+------- breaking API changes
 --                   | | +----- non-breaking API additions
 --                   | | | +--- code changes with no API change
-version:             0.2.1.0
+version:             0.2.1.1
 
 -- A short (one-line) description of the package.
 synopsis:            A simple interpreter for arrayForth, the language used on GreenArrays chips.
@@ -51,7 +51,7 @@ source-repository head
 
 library
   -- Modules exported by the library.
-  exposed-modules:     Language.ArrayForth.Cores
+  exposed-modules:     Language.ArrayForth.Core
                        Language.ArrayForth.Distance, 
                        Language.ArrayForth.Interpreter,
                        Language.ArrayForth.NativeProgram,
@@ -67,30 +67,61 @@ library
   -- other-modules:       
   
   -- Other library packages from which modules are imported.
-  build-depends:       base >3 && <=5, array >=0.4, mcmc-synthesis >=0.1, modular-arithmetic ==1.*,
-                       MonadRandom ==0.1.*, OddWord >=1.0.0, split ==0.1.*, vector ==0.9.*
+  build-depends:       base >3 && <=5, 
+                       array >=0.4, 
+                       lazyarray >=0.1,
+                       mcmc-synthesis >=0.1, 
+                       modular-arithmetic ==1.*,
+                       MonadRandom ==0.1.*, 
+                       OddWord >=1.0.0, 
+                       split ==0.1.*, 
+                       vector ==0.9.*
+
   GHC-options:         -Wall -funbox-strict-fields -fno-warn-orphans -rtsopts
 
 executable mcmc-demo
   Main-is:             src/Main.hs
-  build-depends:       base >3 && <=5, mcmc-synthesis >=0.1, array-forth,
-                       MonadRandom ==0.1.*, optparse-applicative ==0.5.*
+
+  build-depends:       array-forth,
+                       base >3 && <=5, 
+                       mcmc-synthesis >=0.1, 
+                       MonadRandom ==0.1.*,
+                       optparse-applicative ==0.5.*
+
   GHC-options:         -Wall -rtsopts
 
 executable array-forth
   Main-is:             src/Run.hs
-  build-depends:       base >3 && <=5, vector ==0.9.*, split ==0.1.*, array-forth
+
+  build-depends:       array-forth
+                       base >3 && <=5,
+                       split ==0.1.*,
+                       vector ==0.9.*,
+
+
   GHC-options:         -Wall -rtsopts
 
 executable chart
   Main-is:             src/Chart.hs
-  build-depends:       base >3 && <=5, mcmc-synthesis >=0.1, array-forth, Chart >=0.16,
-                       MonadRandom ==0.1.*, optparse-applicative ==0.5.*
+
+  build-depends:       array-forth,                       
+                       base >3 && <=5,
+                       Chart >=0.16,
+                       mcmc-synthesis >=0.1,
+                       MonadRandom ==0.1.*,
+                       optparse-applicative ==0.5.*
+
   GHC-options:         -Wall -rtsopts -O2
 
 test-suite test-array-forth
   Type:                exitcode-stdio-1.0
   Main-is:             test/Language/ArrayForth/Test.hs
-  build-depends:       base >3 && <=5, QuickCheck >= 2 && <3, HUnit >= 1 && < 2,
-                       test-framework-th ==0.*, test-framework-quickcheck2 ==0.*,
-                       test-framework-hunit ==0.*, array-forth
+
+  build-depends:       array-forth                       
+                       base >3 && <=5,
+                       HUnit >= 1 && < 2,
+                       QuickCheck >= 2 && <3,
+                       test-framework-hunit ==0.*,
+                       test-framework-quickcheck2 ==0.*,
+                       test-framework-th ==0.*,
+
