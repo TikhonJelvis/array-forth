@@ -8,7 +8,6 @@
 -- All of the actually interesting code is in the typeclass instances.
 module Language.ArrayForth.Core where
 
-import           Data.Ix      (Ix (..))
 import           Data.Modular 
 
 import           Text.Printf  (printf)
@@ -48,13 +47,6 @@ instance Enum Core where
 instance Bounded Core where
   minBound = Core 0 0
   maxBound = Core 7 17
-
-instance Ix Core where
-  range (start, end) = [start..end]
-  index (start, end) element
-    | inRange (start, end) element = fromEnum element - fromEnum start
-    | otherwise                    = error "Core index out of range."
-  inRange (start, end) element = element >= start && element <= end
 
 -- Core addresses from a group, eh?
 instance Num Core where
