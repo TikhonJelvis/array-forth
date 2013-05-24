@@ -1,4 +1,6 @@
-{-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE MonadComprehensions #-}
+{-# LANGUAGE NamedFieldPuns      #-}
+{-# LANGUAGE RecordWildCards     #-}
 module Language.ArrayForth.Interpreter where
 
 import           Data.Bits
@@ -95,44 +97,48 @@ run op trace = trace ++ [execute op $ last trace]
 -- | Executes an opcode on the given state. If the state is blocked on
 -- some communication, nothing changes.
 execute :: Opcode -> State -> State
-execute op state@State {a, b, p, r, s, t, memory} = fromMaybe state result 
+execute op state@State {..} = fromMaybe state [ res | res <- result, not $ blocked res ]
   where result = case op of
-          Ret          -> Just $ fst . rpop $ state {p = r}
-          Exec         -> Just $ state {r = p, p = r}
-          Unext        -> Just $ if r == 0 then fst $ rpop state
-                                         else state {r = r - 1, p = p - 1}
           FetchP       -> dpush (incrP state) <$> memory ! p
           FetchPlus    -> dpush (state {a = a + 1}) <$> memory ! a
           FetchB       -> dpush state <$> memory ! b
           Fetch        -> dpush state <$> memory ! a
-          StoreP       -> incrP <$> set state' p top
+          _            -> Just normal
+        normal = case op of
+          Ret          -> fst . rpop $ state {p = r}
+          Exec         -> state {r = p, p = r}
+          Unext        -> if r == 0 then fst $ rpop state
+                                  else state {r = r - 1, p = p - 1}
+          StoreP       -> incrP $ set state' p top
           StorePlus    -> set (state' { a = a + 1 }) a top
           StoreB       -> set state' b top
           Store        -> set state' a top
-          MultiplyStep -> Just multiplyStep
-          Times2       -> Just $ state {t = t `shift` 1}
-          Div2         -> Just $ state {t = t `shift` (-1)}
-          Not          -> Just $ state {t = complement t}
-          Plus         -> Just $ state' {t = s + t}
-          And          -> Just $ state' {t = s .&. t}
-          Or           -> Just $ state' {t = s `xor` t}
-          Drop         -> Just . fst $ dpop state
-          Dup          -> Just $ dpush state t
-          Pop          -> Just . uncurry dpush $ rpop state
-          Over         -> Just $ dpush state s
-          ReadA        -> Just $ dpush state a
-          Nop          -> Just $ state
-          Push         -> Just $ rpush state' top
-          SetB         -> Just $ state' {b = top}
-          SetA         -> Just $ state' {a = top}
+          MultiplyStep -> multiplyStep
+          Times2       -> state {t = t `shift` 1}
+          Div2         -> state {t = t `shift` (-1)}
+          Not          -> state {t = complement t}
+          Plus         -> state' {t = s + t}
+          And          -> state' {t = s .&. t}
+          Or           -> state' {t = s `xor` t}
+          Drop         -> fst $ dpop state
+          Dup          -> dpush state t
+          Pop          -> uncurry dpush $ rpop state
+          Over         -> dpush state s
+          ReadA        -> dpush state a
+          Nop          -> state
+          Push         -> rpush state' top
+          SetB         -> state' {b = top}
+
+          SetA         -> state' {a = top}
           _            -> error "Cannot jump without an address!"
-          where (state', top) = dpop state
-                multiplyStep
-                  | even a    = let t0  = (t .&. 1) `shift` (bitSize t - 1) in
+
+        (state', top) = dpop state
+        multiplyStep
+          | even a    = let t0  = (t .&. 1) `shift` (bitSize t - 1) in
                         state { a = t0 .|. a `shift` (-1)
                               , t = t .&. bit 17 .|. t `shift` (-1)}
-                  | otherwise = let sum0 = (s + t) `shift` (bitSize t - 1)
-                                    sum17 = (s + t) .&. bit 17 in
+          | otherwise = let sum0 = (s + t) `shift` (bitSize t - 1)
+                            sum17 = (s + t) .&. bit 17 in
                         state { a = sum0 .|. a `shift` (-1)
                               , t = sum17 .|. (s + t) `shift` (-1) }
 
