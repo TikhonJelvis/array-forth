@@ -7,15 +7,16 @@ module Main where
 import           Control.Applicative                  ((<$>), (<*>))
 
 import           Data.Bits                            (complement, xor, (.&.))
+import           Data.Maybe                           (fromJust)
 
-import           Language.ArrayForth.Interpreter
+import           Language.ArrayForth.Interpreter      hiding (run)
 import           Language.ArrayForth.NativeProgram
 import           Language.ArrayForth.Opcode
-import           Language.ArrayForth.Parse                 ()
+import           Language.ArrayForth.Parse            ()
 import           Language.ArrayForth.Program
 import           Language.ArrayForth.Stack
-import           Language.ArrayForth.State                 hiding (State (..))
-import qualified Language.ArrayForth.State                 as S
+import           Language.ArrayForth.State            hiding (State (..), (!))
+import qualified Language.ArrayForth.State            as S
 
 import           Test.Framework.Providers.HUnit
 import           Test.Framework.Providers.QuickCheck2
@@ -65,6 +66,8 @@ straightlineProgram = listOf $ oneof [Opcode <$> straight, number, unused]
 main = $(defaultMainGenerator)
 
 run = runNativeProgram startState . read
+
+memory ! address = fromJust $ memory S.! address
 
 -- Instruction utilities tests:
 prop_bits word = word == (toBits $ fromBits word)
