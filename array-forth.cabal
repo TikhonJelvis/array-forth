@@ -10,7 +10,7 @@ name:                array-forth
 -- PVP summary:      +-+------- breaking API changes
 --                   | | +----- non-breaking API additions
 --                   | | | +--- code changes with no API change
-version:             0.2.1.1
+version:             0.2.1.2
 
 -- A short (one-line) description of the package.
 synopsis:            A simple interpreter for arrayForth, the language used on GreenArrays chips.
@@ -70,7 +70,7 @@ library
   -- Other library packages from which modules are imported.
   build-depends:       base >3 && <=5, 
                        array >=0.4,
-                       mcmc-synthesis >=0.1, 
+                       mcmc-synthesis >=0.1.2.1, 
                        modular-arithmetic ==1.*,
                        MonadRandom ==0.1.*, 
                        OddWord >=1.0.0, 
@@ -84,7 +84,7 @@ executable mcmc-demo
 
   build-depends:       array-forth,
                        base >3 && <=5, 
-                       mcmc-synthesis >=0.1, 
+                       mcmc-synthesis >=0.1.2.1, 
                        MonadRandom ==0.1.*,
                        optparse-applicative ==0.5.*
 
@@ -106,7 +106,7 @@ executable chart
   build-depends:       array-forth,
                        base >3 && <=5,
                        Chart >=0.16,
-                       mcmc-synthesis >=0.1,
+                       mcmc-synthesis >=0.1.2.1,
                        MonadRandom ==0.1.*,
                        optparse-applicative ==0.5.*
 
