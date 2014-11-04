@@ -48,7 +48,7 @@ options = Options
                        <> short 'p'
                        <> value inclusiveOr
                        <> metavar "NAME"
-                       <> reader parseProblem
+                       <> eitherReader parseProblem
                        <> help problemHelp)
           <*> option     (long "samples"
                        <> short 's'
@@ -75,10 +75,10 @@ problemHelp :: String
 problemHelp = printf "The problem to run. Currently, the valid choices are:\n%s" names
   where names = init . unlines $ map (((replicate 30 ' ' ++ "- ") ++ ) . fst) problems
 
-parseProblem :: String -> Either ParseError (Problem Program DefaultScore)
+parseProblem :: String -> Either String (Problem Program DefaultScore)
 parseProblem problem = case lookup problem problems of
   Just p  -> return p
-  Nothing -> Left . ErrorMsg $ printf "Problem name %s is not recognized." problem
+  Nothing -> Left $ printf "Problem name %s is not recognized." problem
 
 range :: [Double]
 range = [0..]
