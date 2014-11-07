@@ -23,6 +23,15 @@ source-repository head
   type:           git
   location:       git://github.com/TikhonJelvis/array-forth.git
 
+flag synthesis
+  description:    build the mcmc synthesis demo app
+  default:        False
+
+flag chart
+  description:    build the charting facilities for analyzing the synthesizer
+  default:        False
+
+
 library
   exposed-modules:     Language.ArrayForth.Core
                        Language.ArrayForth.Channel
@@ -50,13 +59,15 @@ library
 executable mcmc-demo
   Main-is:             src/Main.hs
 
-  build-depends:       array-forth,
-                       base >3 && <=5, 
-                       mcmc-synthesis >=0.1.2.1, 
-                       MonadRandom ==0.1.*,
-                       optparse-applicative >=0.7 && <0.10
-
-  GHC-options:         -Wall -rtsopts
+  if flag(synthesis)
+      build-depends:       array-forth,
+                           base >3 && <=5, 
+                           mcmc-synthesis >=0.1.2.1, 
+                           MonadRandom ==0.1.*,
+                           optparse-applicative >=0.7 && <0.10
+      GHC-options:         -Wall -rtsopts
+  else 
+      buildable:           False 
 
 executable array-forth
   Main-is:             src/Run.hs
@@ -71,14 +82,17 @@ executable array-forth
 executable chart
   Main-is:             src/Chart.hs
 
-  build-depends:       array-forth,
-                       base >3 && <=5,
-                       Chart >=0.16 && <1.0,
-                       mcmc-synthesis >=0.1.2.1,
-                       MonadRandom ==0.1.*,
-                       optparse-applicative >=0.7 && <0.10
+  if flag(chart)
+      build-depends:       array-forth,
+                           base >3 && <=5,
+                           Chart >=0.16 && <1.0,
+                           mcmc-synthesis >=0.1.2.1,
+                           MonadRandom ==0.1.*,
+                           optparse-applicative >=0.7 && <0.10
 
-  GHC-options:         -Wall -rtsopts -O2
+      GHC-options:         -Wall -rtsopts -O2
+  else
+      buildable:           False
 
 test-suite test-array-forth
   Type:                exitcode-stdio-1.0
