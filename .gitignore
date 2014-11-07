@@ -1,10 +1,17 @@
 # Ignore emacs backup files:
 *~
+\#*\#
+
+# Compile artifacts
 *.hi
 *.o
-\#*\#
-dist
-cabal-dev
 *.tex
 *.log
 *.hers
+
+# Sandboxing
+dist
+cabal-dev
+.cabal-sandbox
+cabal.sandbox.config
+
