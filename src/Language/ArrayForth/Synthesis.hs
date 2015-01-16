@@ -12,7 +12,7 @@ import           Control.Monad.Random            (Random, random, randomR)
 import           Data.Function                   (on)
 import           Data.Functor                    ((<$>))
 import           Data.List                       (elemIndices, genericLength, (\\))
-import           Data.Monoid                     (Monoid (..), (<>))
+import           Data.Monoid                     (Monoid (..))
 
 import           Language.ArrayForth.Distance
 import           Language.ArrayForth.Interpreter
@@ -49,7 +49,7 @@ trace spec inputs score program = mconcat $ zipWith score specs throttled
   where specs   = stepProgram . load spec <$> inputs
         results = stepProgram . load program <$> inputs
         throttled = zipWith go specs results
-          where go spec trace = either id id $ throttle (length spec) trace
+          where go spec' trace' = either id id $ throttle (length spec') trace'
 
 -- | Using a given correctness measure, produce a score also
 -- containing performance.
@@ -57,8 +57,8 @@ withPerformance :: Score s => (Trace -> Trace -> s) -> (Trace -> Trace -> Defaul
 withPerformance score spec result = DefaultScore (toScore $ score spec res) performance
   where res = either id id $ throttle (length spec) result
         performance = case throttle (length spec) result of
-          Right res -> (countTime spec - countTime res) / 10
-          Left  res -> countTime spec - countTime res - 1e10
+          Right res' -> (countTime spec - countTime res') / 10
+          Left  res' -> countTime spec - countTime res' - 1e10
 
 -- | Given a specification program and some inputs, evaluate a program
 -- against the specification for both performance and
@@ -99,10 +99,10 @@ pairs = map (\ (a, b) -> (Opcode a, Opcode b))
 removePairs :: Distr Instruction -> Mutation Program
 removePairs instrDistr program =
   mix [(mutateInstructionsAt instrDistr is program, 1.0) | is <- findPairs program]
-  where findPairs program = do (a, b) <- pairs
-                               indexA <- elemIndices a program
-                               indexB <- elemIndices b program
-                               return [indexA, indexB]
+  where findPairs program' = do (a, b) <- pairs
+                                indexA <- elemIndices a program'
+                                indexB <- elemIndices b program'
+                                return [indexA, indexB]
 
 -- | The default mutations to try. For now, this will either change an
 -- instruction or swap two instructions in the program, with equal

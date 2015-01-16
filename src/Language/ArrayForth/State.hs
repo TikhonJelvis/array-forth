@@ -77,13 +77,14 @@ instance Show State where
 startState :: State
 startState = State 0 0 0 0 0 0 (Just 0) empty empty emptyMem
 
+
 -- | Increment the p register for the given state. If p is in RAM or
 -- ROM, this wraps p as appropriate. If p is in IO, this does nothing
 -- and p remains unchanged.
 incrP :: State -> State
 incrP state@State { p } = state { p = nextP }
-  where nextP | p < 2 * memSize = succ p `mod` 2 * memSize
-              | p < 4 * memSize = succ p `mod` 2 * memSize + 2 * memSize
+  where nextP | p < 2 * memSize = succ p `mod` (2 * memSize)
+              | p < 4 * memSize = (succ p `mod` (2 * memSize)) + 2 * memSize
               | otherwise       = p
 
 -- | The next word of instructions to execute in the given

@@ -5,7 +5,7 @@ module Language.ArrayForth.Interpreter where
 
 import           Data.Bits
 import           Data.Functor                      ((<$>))
-import           Data.Maybe                        (fromMaybe, mapMaybe)
+import           Data.Maybe                        (fromJust, fromMaybe, mapMaybe)
 
 import           Language.ArrayForth.NativeProgram
 import           Language.ArrayForth.Opcode
@@ -133,14 +133,16 @@ execute op state@State {..} = fromMaybe state [ res | res <- result, not $ block
           _            -> error "Cannot jump without an address!"
 
         (state', top) = dpop state
+        -- TODO: support different word sizes?
         multiplyStep
-          | even a    = let t0  = (t .&. 1) `shift` (bitSize t - 1) in
+          | even a    = let t0  = (t .&. 1) `shift` (size - 1) in
                         state { a = t0 .|. a `shift` (-1)
-                              , t = t .&. bit 17 .|. t `shift` (-1)}
-          | otherwise = let sum0 = (s + t) `shift` (bitSize t - 1)
-                            sum17 = (s + t) .&. bit 17 in
+                              , t = t .&. bit (size - 1) .|. t `shift` (-1)}
+          | otherwise = let sum0 = (s + t) `shift` (size - 1)
+                            sum17 = (s + t) .&. bit (size - 1) in
                         state { a = sum0 .|. a `shift` (-1)
                               , t = sum17 .|. (s + t) `shift` (-1) }
+        size = fromJust $ bitSizeMaybe t
 
 -- | Execute a jump instruction to the given address.
 jump :: Opcode -> F18Word -> State -> State
@@ -149,5 +151,6 @@ jump op addr state@State{p, r, t} = case op of
   Call    -> (rpush state p) {p = addr}
   Next    -> if r == 0 then fst $ rpop state else state {r = r - 1, p = addr}
   If      -> if t /= 0 then state {p = addr} else state
-  MinusIf -> if t `testBit` pred (bitSize (0 :: F18Word)) then state else state {p = addr}
+  MinusIf -> if t `testBit` pred size then state else state {p = addr}
   _       -> error "Non-jump instruction given a jump address!"
+  where size = fromJust $ bitSizeMaybe (0 :: F18Word)
