@@ -2,7 +2,7 @@
 -- documentation, see http://haskell.org/cabal/users-guide/
 
 name:                array-forth
-version:             0.2.1.3
+version:             0.2.1.4
 
 synopsis:            A simple interpreter for arrayForth, the language used on GreenArrays chips.
 description:         This is a package for working with arrayForth. This is a variant of Forth used by GreenArrays chips. This package contains an arrayForth simulator, two different representations of arrayForth programs and some utilities like parsing. 
@@ -45,7 +45,7 @@ library
                        Language.ArrayForth.State,
                        Language.ArrayForth.Synthesis
   hs-source-dirs:      src
-  build-depends:       base >3 && <=5, 
+  build-depends:       base >=4.7 && <=5, 
                        array >=0.4,
                        mcmc-synthesis >=0.1.2.1, 
                        modular-arithmetic ==1.*,
@@ -61,7 +61,7 @@ executable mcmc-demo
 
   if flag(synthesis)
       build-depends:       array-forth,
-                           base >3 && <=5, 
+                           base >4.7 && <=5, 
                            mcmc-synthesis >=0.1.2.1, 
                            MonadRandom ==0.1.*,
                            optparse-applicative >=0.7 && <0.10
@@ -73,7 +73,7 @@ executable array-forth
   Main-is:             src/Run.hs
 
   build-depends:       array-forth,
-                       base >3 && <=5,
+                       base >4.7 && <=5,
                        split ==0.1.*,
                        vector >=0.9 && <0.11
 
@@ -84,7 +84,7 @@ executable chart
 
   if flag(chart)
       build-depends:       array-forth,
-                           base >3 && <=5,
+                           base >4.7 && <=5,
                            Chart >=0.16 && <1.0,
                            mcmc-synthesis >=0.1.2.1,
                            MonadRandom ==0.1.*,
@@ -99,10 +99,9 @@ test-suite test-array-forth
   Main-is:             test/Language/ArrayForth/Test.hs
 
   build-depends:       array-forth,
-                       base >3 && <=5,
+                       base >4.7 && <=5,
                        HUnit >= 1 && < 2,
                        QuickCheck >= 2 && <3,
                        test-framework-hunit ==0.*,
                        test-framework-quickcheck2 ==0.*,
                        test-framework-th ==0.*
-
