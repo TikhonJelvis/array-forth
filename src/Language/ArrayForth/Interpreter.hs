@@ -142,7 +142,7 @@ execute op state@State {..} = fromMaybe state [ res | res <- result, not $ block
                             sum17 = (s + t) .&. bit (size - 1) in
                         state { a = sum0 .|. a `shift` (-1)
                               , t = sum17 .|. (s + t) `shift` (-1) }
-        size = fromJust $ bitSizeMaybe t
+        size = bitSize t
 
 -- | Execute a jump instruction to the given address.
 jump :: Opcode -> F18Word -> State -> State
@@ -153,4 +153,4 @@ jump op addr state@State{p, r, t} = case op of
   If      -> if t /= 0 then state {p = addr} else state
   MinusIf -> if t `testBit` pred size then state else state {p = addr}
   _       -> error "Non-jump instruction given a jump address!"
-  where size = fromJust $ bitSizeMaybe (0 :: F18Word)
+  where size = bitSize (0 :: F18Word)
