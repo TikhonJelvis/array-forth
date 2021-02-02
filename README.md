@@ -4,7 +4,7 @@ This is a simple F18A emulator. It can run a code on a single core and has some 
 
 It was originally written to implement a superoptimizer based on [Stochastic Superoptimization][1]; however, it's useful as a standalone program as well.
 
-[1]: http://cs.stanford.edu/people/eschkufz/research/asplos291-schkufza.pdf
+[1]: https://cs.stanford.edu/people/sharmar/pubs/asplos291-schkufza.pdf
 
 ## Installation
 
